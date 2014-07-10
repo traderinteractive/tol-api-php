@@ -36,18 +36,18 @@ final class Authentication
      *
      * @return \DominionEnterprises\Api\Authentication
      */
-    public static function createClientCredentials($clientId, $clientSecret, $refreshResource = 'token')
+    public static function createClientCredentials($clientId, $clientSecret, $refreshResource = 'token', $tokenResource = 'token')
     {
         Util::throwIfNotType(array('string' => array($clientId, $clientSecret)), true);
 
-        $getTokenRequestFunc = function($baseUrl, $refreshToken) use ($clientId, $clientSecret, $refreshResource) {
+        $getTokenRequestFunc = function($baseUrl, $refreshToken) use ($clientId, $clientSecret, $refreshResource, $tokenResource) {
             if ($refreshToken !== null) {
                 return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
             }
 
             $data = array('client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials');
             return new Request(
-                "{$baseUrl}/token",
+                "{$baseUrl}/{$tokenResource}",
                 'POST',
                 Http::buildQueryString($data),
                 array('Content-Type' => 'application/x-www-form-urlencoded')
@@ -69,12 +69,19 @@ final class Authentication
      *
      * @return \DominionEnterprises\Api\Authentication
      */
-    public static function createOwnerCredentials($clientId, $clientSecret, $username, $password, $refreshResource = 'token')
+    public static function createOwnerCredentials(
+        $clientId,
+        $clientSecret,
+        $username,
+        $password,
+        $refreshResource = 'token',
+        $tokenResource = 'token'
+    )
     {
         Util::throwIfNotType(array('string' => array($clientId, $clientSecret, $username, $password)), true);
 
         $getTokenRequestFunc = function($baseUrl, $refreshToken)
-        use ($clientId, $clientSecret, $username, $password, $refreshResource) {
+        use ($clientId, $clientSecret, $username, $password, $refreshResource, $tokenResource) {
             if ($refreshToken !== null) {
                 return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
             }
@@ -87,7 +94,7 @@ final class Authentication
                 'grant_type' => 'password',
             );
             return new Request(
-                "{$baseUrl}/token",
+                "{$baseUrl}/{$tokenResource}",
                 'POST',
                 Http::buildQueryString($data),
                 array('Content-Type' => 'application/x-www-form-urlencoded')

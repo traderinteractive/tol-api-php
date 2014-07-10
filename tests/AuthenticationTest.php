@@ -129,6 +129,21 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('theRefreshToken', $actualRefreshToken);
         $this->assertSame(2, $actualExpires);
     }
+
+    /**
+     * @test
+     * @covers ::createClientCredentials
+     * @covers ::getTokenRequest
+     */
+    public function getTokenRequest_clientCredentialsCustomTokenResource()
+    {
+        $auth = Authentication::createClientCredentials('id', 'secret', 'token', 'custom');
+        $request = $auth->getTokenRequest('baseUrl', null);
+        $this->assertSame('baseUrl/custom', $request->getUrl());
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', $request->getBody());
+        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+    }
 }
 
 function time()
