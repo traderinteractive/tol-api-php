@@ -13,7 +13,7 @@ require 'vendor/autoload.php';
 $phpcsCLI = new PHP_CodeSniffer_CLI();
 $phpcsArguments = array(
     'standard' => array(__DIR__ . '/vendor/dominionenterprises/dws-coding-standard/DWS'),
-    'files' => array('src', 'tests', 'build.php', 'dockerBuild.php'),
+    'files' => array('src', 'tests', 'build.php'),
     'warningSeverity' => 0,
 );
 $phpcsViolations = $phpcsCLI->process($phpcsArguments);

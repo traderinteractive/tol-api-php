@@ -219,7 +219,7 @@ If you would like to contribute, please use our build process for any changes an
 TESTING_MONGO_URL=mongodb://127.0.0.1:27017 TESTING_REDIS_URL=tcp://127.0.0.7:6379 ./build.php
 ```
 
-There is also a [docker](http://www.docker.com/)-based build script that will standup docker containers for the databases, execute the build inside a docker container, and then terminate everything.  This is an easy way to build the application:
+There is also a [docker](http://www.docker.com/)-based [fig](http://www.fig.sh/) configuration that will standup docker containers for the databases, execute the build inside a docker container, and then terminate everything.  This is an easy way to build the application:
 ```sh
-./dockerBuild.php
+fig run build
 ```

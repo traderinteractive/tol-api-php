@@ -1,0 +1,11 @@
+build:
+  build: .
+  links:
+    - mongo
+    - redis
+  volumes:
+    - .:/code
+mongo:
+  image: mongo
+redis:
+  image: redis
