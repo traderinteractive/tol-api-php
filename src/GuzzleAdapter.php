@@ -14,17 +14,17 @@ final class GuzzleAdapter implements Adapter
     /**
      * @var array array of \Guzzle\Http\Message\RequestInterface with keys matching what was given from start()
      */
-    private $_requests = array();
+    private $_requests = [];
 
     /**
      * @var array array of \Guzzle\Http\Message\Response with keys matching what was given from start()
      */
-    private $_responses = array();
+    private $_responses = [];
 
     /**
      * @var array array of \Exception with keys matching what was given from start()
      */
-    private $_exceptions = array();
+    private $_exceptions = [];
 
     /**
      * @var \Guzzle\Http\Client
@@ -48,7 +48,7 @@ final class GuzzleAdapter implements Adapter
             $request->getBody(),
             //stop guzzle from following redirects
             //only for 400/500 error codes, actual exceptions can still happen
-            array('allow_redirects' => false, 'exceptions' => false)
+            ['allow_redirects' => false, 'exceptions' => false]
         );
 
         end($this->_requests);
@@ -62,7 +62,7 @@ final class GuzzleAdapter implements Adapter
      */
     public function end($endHandle)
     {
-        Util::throwIfNotType(array('int' => array($endHandle)));
+        Util::throwIfNotType(['int' => [$endHandle]]);
 
         if (!empty($this->_requests)) {
             $multiException = null;
@@ -86,7 +86,7 @@ final class GuzzleAdapter implements Adapter
                 }
             }
 
-            $this->_requests = array();
+            $this->_requests = [];
         }
 
         if (array_key_exists($endHandle, $this->_exceptions)) {

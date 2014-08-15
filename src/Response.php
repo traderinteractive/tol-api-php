@@ -38,9 +38,9 @@ final class Response
      *
      * @throws \InvalidArgumentException Throw if $httpCode is not an integer between 100 and 600
      */
-    public function __construct($httpCode, array $headers, array $body = array())
+    public function __construct($httpCode, array $headers, array $body = [])
     {
-        Util::throwIfNotType(array('int' => $httpCode, 'array' => $headers));
+        Util::throwIfNotType(['int' => $httpCode, 'array' => $headers]);
 
         if ($httpCode < 100 || $httpCode > 600) {
             throw new \InvalidArgumentException('$httpCode must be an integer >= 100 and <= 600');

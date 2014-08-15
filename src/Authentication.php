@@ -38,19 +38,19 @@ final class Authentication
      */
     public static function createClientCredentials($clientId, $clientSecret, $refreshResource = 'token', $tokenResource = 'token')
     {
-        Util::throwIfNotType(array('string' => array($clientId, $clientSecret)), true);
+        Util::throwIfNotType(['string' => [$clientId, $clientSecret]], true);
 
         $getTokenRequestFunc = function($baseUrl, $refreshToken) use ($clientId, $clientSecret, $refreshResource, $tokenResource) {
             if ($refreshToken !== null) {
                 return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
             }
 
-            $data = array('client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials');
+            $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
             return new Request(
                 "{$baseUrl}/{$tokenResource}",
                 'POST',
                 Http::buildQueryString($data),
-                array('Content-Type' => 'application/x-www-form-urlencoded')
+                ['Content-Type' => 'application/x-www-form-urlencoded']
             );
         };
 
@@ -78,7 +78,7 @@ final class Authentication
         $tokenResource = 'token'
     )
     {
-        Util::throwIfNotType(array('string' => array($clientId, $clientSecret, $username, $password)), true);
+        Util::throwIfNotType(['string' => [$clientId, $clientSecret, $username, $password]], true);
 
         $getTokenRequestFunc = function($baseUrl, $refreshToken)
         use ($clientId, $clientSecret, $username, $password, $refreshResource, $tokenResource) {
@@ -86,18 +86,18 @@ final class Authentication
                 return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
             }
 
-            $data = array(
+            $data = [
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
                 'username' => $username,
                 'password' => $password,
                 'grant_type' => 'password',
-            );
+            ];
             return new Request(
                 "{$baseUrl}/{$tokenResource}",
                 'POST',
                 Http::buildQueryString($data),
-                array('Content-Type' => 'application/x-www-form-urlencoded')
+                ['Content-Type' => 'application/x-www-form-urlencoded']
             );
         };
 
@@ -115,7 +115,7 @@ final class Authentication
     {
         $parsedJson = $response->getResponse();
         Util::ensure(200, $response->getHttpCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
-        return array($parsedJson['access_token'], Arrays::get($parsedJson, 'refresh_token'), time() + (int)$parsedJson['expires_in']);
+        return [$parsedJson['access_token'], Arrays::get($parsedJson, 'refresh_token'), time() + (int)$parsedJson['expires_in']];
     }
 
     /**
@@ -128,8 +128,8 @@ final class Authentication
      */
     public function getTokenRequest($baseUrl, $refreshToken)
     {
-        Util::throwIfNotType(array('string' => array($baseUrl)), true);
-        Util::throwIfNotType(array('string' => array($refreshToken)), true, true);
+        Util::throwIfNotType(['string' => [$baseUrl]], true);
+        Util::throwIfNotType(['string' => [$refreshToken]], true, true);
 
         return call_user_func($this->_getTokenRequestFunc, $baseUrl, $refreshToken);
     }
@@ -149,12 +149,7 @@ final class Authentication
     private static function _getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken)
     {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
-        $data = array(
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret,
-            'refresh_token' => $refreshToken,
-            'grant_type' => 'refresh_token',
-        );
+        $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'refresh_token' => $refreshToken, 'grant_type' => 'refresh_token'];
 
         //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible in Apigee and why the
         //$refreshResource variable exists
@@ -162,7 +157,7 @@ final class Authentication
             "{$baseUrl}/{$refreshResource}",
             'POST',
             Http::buildQueryString($data),
-            array('Content-Type' => 'application/x-www-form-urlencoded')
+            ['Content-Type' => 'application/x-www-form-urlencoded']
         );
     }
 }

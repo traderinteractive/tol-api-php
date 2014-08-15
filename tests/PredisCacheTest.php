@@ -30,11 +30,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
     public function setBasicUsage()
     {
         $expires = 'Sun, 30 Jun 2043 13:53:50 GMT';
-        $expected = array(
-            'httpCode' => 200,
-            'headers' => array('Expires' => array($expires), 'Another' => array('Header')),
-            'body' => array('doesnt' => 'matter'),
-        );
+        $expected = ['httpCode' => 200, 'headers' => ['Expires' => [$expires], 'Another' => ['Header']], 'body' => ['doesnt' => 'matter']];
 
         $cache = new PredisCache($this->_client);
 
@@ -58,7 +54,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
     {
         $cache = new PredisCache($this->_client);
         $request = new Request('a url', 'not under test');
-        $response = new Response(200, array('doesnt' => array('matter')));
+        $response = new Response(200, ['doesnt' => ['matter']]);
         $cache->set($request, $response);
         $this->assertNull($cache->get($request));
     }
@@ -69,22 +65,8 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function getBasicUsage()
     {
-        $document = array(
-            '_id' => 'a url',
-            'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('key' => array('value')),
-        );
-        $this->_client->set(
-            'a url:',
-            json_encode(
-                [
-                    'httpCode' => 200,
-                    'headers' => array('key' => array('value')),
-                    'body' => array('doesnt' => 'matter'),
-                ]
-            )
-        );
+        $document = ['_id' => 'a url', 'httpCode' => 200, 'body' => ['doesnt' => 'matter'], 'headers' => ['key' => ['value']]];
+        $this->_client->set('a url:', json_encode(['httpCode' => 200, 'headers' => ['key' => ['value']], 'body' => ['doesnt' => 'matter']]));
 
         $cache = new PredisCache($this->_client);
 
@@ -105,11 +87,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
         $cache = new PredisCache($this->_client);
 
         $request = new Request('a url', 'not under test');
-        $response = new Response(
-            200,
-            array('Expires' => array('Sun, 30 Jun 2043 13:53:50 GMT'), 'Another' => array('Header')),
-            array('doesnt' => 'matter')
-        );
+        $response = new Response(200, ['Expires' => ['Sun, 30 Jun 2043 13:53:50 GMT'], 'Another' => ['Header']], ['doesnt' => 'matter']);
 
         $cache->set($request, $response);
 
@@ -130,11 +108,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
         $cache = new PredisCache($this->_client);
 
         $request = new Request('a url', 'not under test');
-        $response = new Response(
-            200,
-            array('Expires' => array('Sun, 30 Jun 2011 13:53:50 GMT'), 'Another' => array('Header')),
-            array('doesnt' => 'matter')
-        );
+        $response = new Response(200, ['Expires' => ['Sun, 30 Jun 2011 13:53:50 GMT'], 'Another' => ['Header']], ['doesnt' => 'matter']);
 
         $cache->set($request, $response);
 

@@ -25,8 +25,8 @@ final class MongoCache implements Cache
      */
     public function __construct($url, $db, $collection)
     {
-        Util::ensure(true, extension_loaded('mongo'), '\RuntimeException', array('mongo extension is required for ' . __CLASS__));
-        Util::throwIfNotType(array('string' => array($url, $db, $collection)), true);
+        Util::ensure(true, extension_loaded('mongo'), '\RuntimeException', ['mongo extension is required for ' . __CLASS__]);
+        Util::throwIfNotType(['string' => [$url, $db, $collection]], true);
         $mongo = new \MongoClient($url);
         $this->_collection = $mongo->selectDb($db)->selectCollection($collection);
     }
@@ -36,7 +36,7 @@ final class MongoCache implements Cache
      */
     public function set(Request $request, Response $response, $expires = null)
     {
-        Util::throwIfNotType(array('int' => array($expires)), false, true);
+        Util::throwIfNotType(['int' => [$expires]], false, true);
 
         if ($expires === null) {
             $expiresHeader = null;
@@ -48,14 +48,14 @@ final class MongoCache implements Cache
         }
 
         $id = self::_getUniqueId($request);
-        $cache = array(
+        $cache = [
             '_id' => $id,
             'httpCode' => $response->getHttpCode(),
             'body' => $response->getResponse(),
             'headers' => $response->getResponseHeaders(),
             'expires' => new \MongoDate($expires),
-        );
-        $this->_collection->update(array('_id' => $id), $cache, array('upsert' => true));
+        ];
+        $this->_collection->update(['_id' => $id], $cache, ['upsert' => true]);
     }
 
     /**
@@ -63,7 +63,7 @@ final class MongoCache implements Cache
      */
     public function get(Request $request)
     {
-        $cache = $this->_collection->findOne(array('_id' => self::_getUniqueId($request)));
+        $cache = $this->_collection->findOne(['_id' => self::_getUniqueId($request)]);
         if ($cache === null) {
             return null;
         }
@@ -78,7 +78,7 @@ final class MongoCache implements Cache
      */
     public function ensureIndexes()
     {
-        $this->_collection->ensureIndex(array('expires' => 1), array('expireAfterSeconds' => 0, 'background' => true));
+        $this->_collection->ensureIndex(['expires' => 1], ['expireAfterSeconds' => 0, 'background' => true]);
     }
 
     /**

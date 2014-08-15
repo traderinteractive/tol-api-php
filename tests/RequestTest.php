@@ -23,7 +23,7 @@ final class RequestTest extends \PHPUnit_Framework_TestCase
         $url = 'a url';
         $method = 'method';
         $body = 'some data';
-        $headers = array('key' => 'value');
+        $headers = ['key' => 'value'];
         $request = new Request($url, $method, $body, $headers);
         $this->assertSame($url, $request->getUrl());
         $this->assertSame($method, $request->getMethod());
@@ -50,21 +50,21 @@ final class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function badData()
     {
-        return array(
+        return [
             // url checks
-            array(null, 'method', null, array()), // null
-            array(" \n ", 'method', null, array()), // white space
-            array('', 'method', null, array()), // empty string
-            array(1, 'method', null, array()), // not a string
+            [null, 'method', null, []], // null
+            [" \n ", 'method', null, []], // white space
+            ['', 'method', null, []], // empty string
+            [1, 'method', null, []], // not a string
             // method checks
-            array('url', null, null, array()), // null
-            array('url', " \n ", null, array()), // white space
-            array('url', '', null, array()), // empty string
-            array('url', 1, null, array()), // not a string
+            ['url', null, null, []], // null
+            ['url', " \n ", null, []], // white space
+            ['url', '', null, []], // empty string
+            ['url', 1, null, []], // not a string
             // body checks
-            array('url', 'method', " \n ", array()), // white space
-            array('url', 'method', '', array()), // empty string
-            array('url', 'method', 1, array()), // not a string
-        );
+            ['url', 'method', " \n ", []], // white space
+            ['url', 'method', '', []], // empty string
+            ['url', 'method', 1, []], // not a string
+        ];
     }
 }

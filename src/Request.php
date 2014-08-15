@@ -48,10 +48,10 @@ final class Request
      * @throws \InvalidArgumentException Thrown if $method is not a non-empty string
      * @throws \InvalidArgumentException Thrown if $body is not null or not a non-empty string
      */
-    public function __construct($url, $method, $body = null, array $headers = array())
+    public function __construct($url, $method, $body = null, array $headers = [])
     {
-        Util::throwIfNotType(array('string' => array($url, $method)), true);
-        Util::throwIfNotType(array('string' => array($body)), true, true);
+        Util::throwIfNotType(['string' => [$url, $method]], true);
+        Util::throwIfNotType(['string' => [$body]], true, true);
 
         $this->_url = $url;
         $this->_method = $method;

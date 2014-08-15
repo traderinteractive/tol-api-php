@@ -35,12 +35,12 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     public function set()
     {
         $expires = 'Sun, 30 Jun 2013 13:53:50 GMT';
-        $expected = array(
+        $expected = [
             '_id' => 'a url|',
             'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('Expires' => array($expires), 'Another' => array('Header')),
-        );
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
+        ];
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
@@ -63,12 +63,12 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     public function set_withBody()
     {
         $expires = 'Sun, 30 Jun 2013 13:53:50 GMT';
-        $expected = array(
+        $expected = [
             '_id' => 'a url| with a body',
             'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('Expires' => array($expires), 'Another' => array('Header')),
-        );
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
+        ];
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
@@ -95,7 +95,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     {
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
         $request = new Request('a url', 'not under test');
-        $response = new Response(200, array('doesnt' => array('matter')));
+        $response = new Response(200, ['doesnt' => ['matter']]);
         $cache->set($request, $response);
         $this->assertSame(0, $this->_collection->count());
         $this->assertNull($cache->get($request));
@@ -107,12 +107,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function get()
     {
-        $document = array(
-            '_id' => 'a url|',
-            'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('key' => array('value')),
-        );
+        $document = [ '_id' => 'a url|', 'httpCode' => 200, 'body' => ['doesnt' => 'matter'], 'headers' => ['key' => ['value']]];
         $this->_collection->insert($document);
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
@@ -131,12 +126,12 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function get_notFound()
     {
-        $expected = array(
+        $expected = [
             '_id' => 'a url|',
             'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('Expires' => array('Sun, 30 Jun 2013 13:53:50 GMT'), 'Another' => array('Header')),
-        );
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['Expires' => ['Sun, 30 Jun 2013 13:53:50 GMT'], 'Another' => ['Header']],
+        ];
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
@@ -145,7 +140,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $cache->set($request, $response);
 
-        $this->_collection->remove(array('_id' => $expected['_id']));
+        $this->_collection->remove(['_id' => $expected['_id']]);
 
         $this->assertNull($cache->get($request));
     }
@@ -160,12 +155,12 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function get_expired()
     {
-        $expected = array(
+        $expected = [
             '_id' => 'a url',
             'httpCode' => 200,
-            'body' => array('doesnt' => 'matter'),
-            'headers' => array('Expires' => array('Sun, 30 Jun 2011 13:53:50 GMT'), 'Another' => array('Header')),
-        );
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['Expires' => ['Sun, 30 Jun 2011 13:53:50 GMT'], 'Another' => ['Header']],
+        ];
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
         $cache->ensureIndexes();

@@ -28,7 +28,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $auth = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new FakeAdapter(), $auth, 'a url');
-        $this->assertSame(array(null, null), $client->getTokens());
+        $this->assertSame([null, null], $client->getTokens());
     }
 
     /**
@@ -41,8 +41,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $auth = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new AccessTokenAdapter(), $auth, 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', array()))->getHttpCode());
-        $this->assertSame(array(1, null), $client->getTokens());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+        $this->assertSame([1, null], $client->getTokens());
     }
 
     /**
@@ -57,7 +57,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new AccessTokenAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', array()))->getHttpCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -72,7 +72,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new RefreshTokenAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', array()))->getHttpCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -87,7 +87,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new ApigeeOtherFaultAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $this->assertSame(401, $client->end($client->startIndex('a resource', array()))->getHttpCode());
+        $this->assertSame(401, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -102,7 +102,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new ApigeeRefreshTokenAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', array()))->getHttpCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -117,7 +117,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new ApigeeRefreshToken2Adapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', array()))->getHttpCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -147,11 +147,11 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new IndexAdapter(), $authentication, 'baseUrl/v1');
 
-        $response = $client->index('resource name', array('the name' => 'the value'));
+        $response = $client->index('resource name', ['the name' => 'the value']);
 
         $this->assertSame(200, $response->getHttpCode());
-        $this->assertSame(array('key' => 'value'), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -168,8 +168,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $response = $client->get('resource name', 'the id');
 
         $this->assertSame(200, $response->getHttpCode());
-        $this->assertSame(array('key' => 'value'), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -183,11 +183,11 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new PutAdapter(), $authentication, 'baseUrl/v1');
 
-        $response = $client->put('resource name', 'the id', array('the key' => 'the value'));
+        $response = $client->put('resource name', 'the id', ['the key' => 'the value']);
 
         $this->assertSame(200, $response->getHttpCode());
-        $this->assertSame(array('key' => 'value'), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -201,11 +201,11 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new PostAdapter(), $authentication, 'baseUrl/v1');
 
-        $response = $client->post('resource name', array('the key' => 'the value'));
+        $response = $client->post('resource name', ['the key' => 'the value']);
 
         $this->assertSame(200, $response->getHttpCode());
-        $this->assertSame(array('key' => 'value'), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -222,8 +222,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $response = $client->delete('resource name', 'the id');
 
         $this->assertSame(204, $response->getHttpCode());
-        $this->assertSame(array(), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame([], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -239,11 +239,11 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new DeleteAdapter(), $authentication, 'baseUrl/v1');
 
-        $response = $client->delete('resource name', 'the id', array('the key' => 'the value'));
+        $response = $client->delete('resource name', 'the id', ['the key' => 'the value']);
 
         $this->assertSame(204, $response->getHttpCode());
-        $this->assertSame(array(), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame([], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -273,7 +273,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new CheckUrlAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'url');
-        $results = $client->index('resource', array('abc' => array('1$2(3', '4)5*6')));
+        $results = $client->index('resource', ['abc' => ['1$2(3', '4)5*6']]);
         $response = $results->getResponse();
         $this->assertSame('url/resource?abc=1%242%283&abc=4%295%2A6', $response['url']);
     }
@@ -290,7 +290,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new FakeAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $client->post(null, array());
+        $client->post(null, []);
     }
 
     /**
@@ -305,7 +305,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new FakeAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $client->put(null, 'an id', array());
+        $client->put(null, 'an id', []);
     }
 
     /**
@@ -320,7 +320,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $adapter = new FakeAdapter();
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client($adapter, $authentication, 'a url');
-        $client->put('not under test', ' ', array());
+        $client->put('not under test', ' ', []);
     }
 
     /**
@@ -390,17 +390,17 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $cache = new ArrayCache();
 
-        return array(
+        return [
             // host checks
-            '$baseUrl is null' => array($adapter, $authentication, null, Client::CACHE_MODE_ALL, $cache),
-            '$baseUrl is empty string' => array($adapter, $authentication, '', Client::CACHE_MODE_ALL, $cache),
-            '$baseUrl is whitespace' => array($adapter, $authentication, " \n ", Client::CACHE_MODE_ALL, $cache),
-            '$baseUrl is not a string' => array($adapter, $authentication, 123, Client::CACHE_MODE_ALL, $cache),
+            '$baseUrl is null' => [$adapter, $authentication, null, Client::CACHE_MODE_ALL, $cache],
+            '$baseUrl is empty string' => [$adapter, $authentication, '', Client::CACHE_MODE_ALL, $cache],
+            '$baseUrl is whitespace' => [$adapter, $authentication, " \n ", Client::CACHE_MODE_ALL, $cache],
+            '$baseUrl is not a string' => [$adapter, $authentication, 123, Client::CACHE_MODE_ALL, $cache],
             // cacheMode checks
-            '$cacheMode is not valid constant' => array($adapter, $authentication, 'baseUrl', 42, $cache),
+            '$cacheMode is not valid constant' => [$adapter, $authentication, 'baseUrl', 42, $cache],
             // cache checks
-            '$cache is null with mode ALL' => array($adapter, $authentication, 'baseUrl', Client::CACHE_MODE_ALL, null),
-        );
+            '$cache is null with mode ALL' => [$adapter, $authentication, 'baseUrl', Client::CACHE_MODE_ALL, null],
+        ];
     }
 
     /**
@@ -428,7 +428,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $cache = new ArrayCache();
         $request = new Request('baseUrl/a+url/id', 'not under test');
-        $expected = new Response(200, array('key' => array('value')), array('doesnt' => 'matter'));
+        $expected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $cache->set($request, $expected);
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new TokenAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_GET, $cache);
@@ -450,8 +450,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $response = $client->end($client->startGet('resource name', 'the id'));
 
         $this->assertSame(200, $response->getHttpCode());
-        $this->assertSame(array('key' => 'value'), $response->getResponse());
-        $this->assertSame(array('Content-Type' => array('application/json')), $response->getResponseHeaders());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -485,19 +485,15 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $request = $authentication->getTokenRequest('baseUrl', 'token', null);
         $cache->set(
             $request,
-            new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => 'an access token', 'expires_in' => 1)
-            )
+            new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'an access token', 'expires_in' => 1])
         );
         $client = new Client(new NoTokenAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_TOKEN, $cache);
         // no token requests should be made
-        $this->assertSame(array('a body'), $client->index('foos')->getResponse());
+        $this->assertSame(['a body'], $client->index('foos')->getResponse());
         // empty the cache
-        $cache->cache = array();
+        $cache->cache = [];
         // no token requests should be made with second  request
-        $this->assertSame(array('a body'), $client->index('foos')->getResponse());
+        $this->assertSame(['a body'], $client->index('foos')->getResponse());
     }
 }
 
@@ -512,7 +508,7 @@ final class NoTokenAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'foos?') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('a body'));
+            return new Response(200, ['Content-Type' => ['application/json']], ['a body']);
         }
 
         throw new \Exception('Unexpected request');
@@ -531,11 +527,11 @@ final class IndexAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'token') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'a token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
         if ($this->_request->getMethod() === 'GET' && $this->_request->getUrl() === 'baseUrl/v1/resource+name?the+name=the+value') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('key' => 'value'));
+            return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
         throw new \Exception('Unexpected request');
@@ -554,11 +550,11 @@ final class GetAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'token') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'a token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
         if ($this->_request->getMethod() === 'GET' && $this->_request->getUrl() === 'baseUrl/v1/resource+name/the+id') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('key' => 'value'));
+            return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
         throw new \Exception('Unexpected request');
@@ -577,20 +573,20 @@ final class PutAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'token') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'a token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
         if (
             $this->_request->getMethod() === 'PUT' &&
             $this->_request->getUrl() === 'baseUrl/v1/resource+name/the+id' &&
             $this->_request->getBody() === '{"the key":"the value"}' &&
-            $this->_request->getHeaders() === array(
+            $this->_request->getHeaders() === [
                 'Content-Type' => 'application/json',
                 'Accept-Encoding' => 'gzip',
                 'Authorization' => 'Bearer a token',
-            )
+            ]
         ) {
-            return new Response(200, array('Content-Type' => array('application/json')), array('key' => 'value'));
+            return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
         throw new \Exception('Unexpected request');
@@ -609,20 +605,20 @@ final class PostAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'token') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'a token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
         if (
             $this->_request->getMethod() === 'POST' &&
             $this->_request->getUrl() === 'baseUrl/v1/resource+name' &&
             $this->_request->getBody() === '{"the key":"the value"}' &&
-            $this->_request->getHeaders() === array(
+            $this->_request->getHeaders() === [
                 'Content-Type' => 'application/json',
                 'Accept-Encoding' => 'gzip',
                 'Authorization' => 'Bearer a token',
-            )
+            ]
         ) {
-            return new Response(200, array('Content-Type' => array('application/json')), array('key' => 'value'));
+            return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
         throw new \Exception('Unexpected request');
@@ -641,22 +637,22 @@ final class DeleteAdapter implements Adapter
     public function end($handle)
     {
         if (substr($this->_request->getUrl(), -5) === 'token') {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'a token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
         if (
             $this->_request->getMethod() === 'DELETE' &&
             $this->_request->getUrl() === 'baseUrl/v1/resource+name/the+id' &&
-            $this->_request->getHeaders() === array(
+            $this->_request->getHeaders() === [
                 'Content-Type' => 'application/json',
                 'Accept-Encoding' => 'gzip',
                 'Authorization' => 'Bearer a token',
-            )
+            ]
         ) {
             $body = $this->_request->getBody();
 
             if ($body === null || $body === '{"the key":"the value"}') {
-                return new Response(204, array('Content-Type' => array('application/json')));
+                return new Response(204, ['Content-Type' => ['application/json']]);
             }
         }
 
@@ -672,7 +668,7 @@ final class TokenAdapter implements Adapter
 
     public function end($handle)
     {
-        return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'token', 'expires_in' => 1));
+        return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'token', 'expires_in' => 1]);
     }
 }
 
@@ -688,7 +684,7 @@ final class ExceptionAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'foo', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'foo', 'expires_in' => 1]);
         }
 
         throw new \Exception('An error');
@@ -708,21 +704,17 @@ final class AccessTokenAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            $response = new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => $this->_count, 'expires_in' => 1)
-            );
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
             ++$this->_count;
             return $response;
         }
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
-            return new Response(200, array('Content-Type' => array('application/json')), array());
+            return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
-        return new Response(401, array('Content-Type' => array('application/json')), array('error' => 'invalid_grant'));
+        return new Response(401, ['Content-Type' => ['application/json']], ['error' => 'invalid_grant']);
     }
 }
 
@@ -743,8 +735,8 @@ final class RefreshTokenAdapter implements Adapter
         ) {
             $response = new Response(
                 200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => 'badToken', 'refresh_token' => 'boo', 'expires_in' => 1)
+                ['Content-Type' => ['application/json']],
+                ['access_token' => 'badToken', 'refresh_token' => 'boo', 'expires_in' => 1]
             );
             return $response;
         }
@@ -753,20 +745,16 @@ final class RefreshTokenAdapter implements Adapter
             substr_count($this->_request->getUrl(), 'token') === 1 &&
             substr_count($this->_request->getBody(), 'refresh_token=boo') === 1
         ) {
-            $response = new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => 'goodToken', 'expires_in' => 1)
-            );
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'goodToken', 'expires_in' => 1]);
             return $response;
         }
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer goodToken') {
-            return new Response(200, array('Content-Type' => array('application/json')), array());
+            return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
-        return new Response(401, array('Content-Type' => array('application/json')), array('error' => 'invalid_grant'));
+        return new Response(401, ['Content-Type' => ['application/json']], ['error' => 'invalid_grant']);
     }
 }
 
@@ -783,25 +771,17 @@ final class ApigeeOtherFaultAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            $response = new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => $this->_count, 'expires_in' => 1)
-            );
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
             ++$this->_count;
             return $response;
         }
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
-            return new Response(200, array('Content-Type' => array('application/json')), array());
+            return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
-        return new Response(
-            401,
-            array('Content-Type' => array('application/json')),
-            array('someotherproblem' => 'Something other than invalid access token')
-        );
+        return new Response(401, ['Content-Type' => ['application/json']], ['someotherproblem' => 'Something other than invalid access token']);
     }
 }
 
@@ -818,25 +798,17 @@ final class ApigeeRefreshTokenAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            $response = new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => $this->_count, 'expires_in' => 1)
-            );
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
             ++$this->_count;
             return $response;
         }
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
-            return new Response(200, array('Content-Type' => array('application/json')), array());
+            return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
-        return new Response(
-            401,
-            array('Content-Type' => array('application/json')),
-            array('fault' => array('faultstring' => 'InvAlid accEss tOkEn'))
-        );
+        return new Response(401, ['Content-Type' => ['application/json']], ['fault' => ['faultstring' => 'InvAlid accEss tOkEn']]);
     }
 }
 
@@ -853,25 +825,17 @@ final class ApigeeRefreshToken2Adapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            $response = new Response(
-                200,
-                array('Content-Type' => array('application/json')),
-                array('access_token' => $this->_count, 'expires_in' => 1)
-            );
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
             ++$this->_count;
             return $response;
         }
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
-            return new Response(200, array('Content-Type' => array('application/json')), array());
+            return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
-        return new Response(
-            401,
-            array('Content-Type' => array('application/json')),
-            array('fault' => array('faultstring' => 'AccEss TokEn eXpiRed'))
-        );
+        return new Response(401, ['Content-Type' => ['application/json']], ['fault' => ['faultstring' => 'AccEss TokEn eXpiRed']]);
     }
 }
 
@@ -883,7 +847,7 @@ final class ErrorResponseAdapter implements Adapter
 
     public function end($handle)
     {
-        return new Response(400, array('Content-Type' => array('application/json')), array('error_description' => 'an error'));
+        return new Response(400, ['Content-Type' => ['application/json']], ['error_description' => 'an error']);
     }
 }
 
@@ -895,7 +859,7 @@ final class FakeAdapter implements Adapter
 
     public function end($handle)
     {
-        return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'foo', 'expires_in' => 1));
+        return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'foo', 'expires_in' => 1]);
     }
 }
 
@@ -912,8 +876,8 @@ final class CheckUrlAdapter implements Adapter
     {
         return new Response(
             200,
-            array('Content-Type' => array('application/json')),
-            array('access_token' => 'foo', 'url' => $this->_request->getUrl(), 'expires_in' => 1)
+            ['Content-Type' => ['application/json']],
+            ['access_token' => 'foo', 'url' => $this->_request->getUrl(), 'expires_in' => 1]
         );
     }
 }
@@ -930,11 +894,11 @@ final class CacheAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), 'token') == 1) {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'token', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'token', 'expires_in' => 1]);
         }
 
         if (substr_count($this->_request->getUrl(), 'a+url') == 1) {
-            return new Response(200, array('header' => array('value')), array('doesnt' => 'matter'));
+            return new Response(200, ['header' => ['value']], ['doesnt' => 'matter']);
         }
 
         throw new \Exception();
@@ -942,7 +906,7 @@ final class CacheAdapter implements Adapter
 }
 final class ArrayCache implements Cache
 {
-    public $cache = array();
+    public $cache = [];
 
     public function set(Request $request, Response $response, $expires = null)
     {
