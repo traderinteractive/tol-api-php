@@ -37,13 +37,12 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
         $collection->rewind();
         $iterations = 0;
         while ($collection->valid()) {
             $key = $collection->key();
-            $expected = array('id' => (string)$key, 'key' => $key);
-            $this->assertSame($expected, $collection->current());
+            $this->assertSame(['id' => (string)$key, 'key' => $key], $collection->current());
             $collection->next();
             ++$iterations;
         }
@@ -61,13 +60,12 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
         $collection->rewind();
         $collection->rewind();
         $iterations = 0;
         foreach ($collection as $key => $actual) {
-            $expected = array('id' => (string)$key, 'key' => $key);
-            $this->assertSame($expected, $actual);
+            $this->assertSame(['id' => (string)$key, 'key' => $key], $actual);
             ++$iterations;
         }
 
@@ -84,9 +82,9 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
-        $this->assertSame(array('id' => '0', 'key' => 0), $collection->current());
-        $this->assertSame(array('id' => '0', 'key' => 0), $collection->current());
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
+        $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
     }
 
     /**
@@ -99,10 +97,10 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
         $collection->next();
         $collection->next();
-        $this->assertSame(array('id' => '1', 'key' => 1), $collection->current());
+        $this->assertSame(['id' => '1', 'key' => 1], $collection->current());
     }
 
     /**
@@ -121,7 +119,7 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
         $this->assertSame(5, $collection->count());
     }
 
@@ -139,7 +137,7 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
         $this->assertSame(0, $collection->key());
     }
 
@@ -157,8 +155,8 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
-        $this->assertSame(array('id' => '0', 'key' => 0), $collection->current());
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
     }
 
     /**
@@ -196,12 +194,11 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', array('limit' => 3));
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
 
         $iterations = 0;
         foreach ($collection as $key => $actual) {
-            $expected = array('id' => (string)$key, 'key' => $key);
-            $this->assertSame($expected, $actual);
+            $this->assertSame(['id' => (string)$key, 'key' => $key], $actual);
             ++$iterations;
         }
 
@@ -209,8 +206,7 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
 
         $iterations = 0;
         foreach ($collection as $key => $actual) {
-            $expected = array('id' => (string)$key, 'key' => $key);
-            $this->assertSame($expected, $actual);
+            $this->assertSame(['id' => (string)$key, 'key' => $key], $actual);
             ++$iterations;
         }
 
@@ -243,7 +239,7 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
         $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
         $collection = new Collection($client, 'single');
         foreach ($collection as $item) {
-            $this->assertSame(array('id' => '0', 'key' => 0), $item);
+            $this->assertSame(['id' => '0', 'key' => 0], $item);
         }
     }
 }
@@ -260,47 +256,47 @@ final class CollectionAdapter implements Adapter
     public function end($handle)
     {
         if (substr_count($this->_request->getUrl(), '/token') == 1) {
-            return new Response(200, array('Content-Type' => array('application/json')), array('access_token' => 'foo', 'expires_in' => 1));
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'foo', 'expires_in' => 1]);
         }
 
         if (substr_count($this->_request->getUrl(), '/empty') == 1) {
             return new Response(
                 200,
-                array('Content-Type' => array('application/json')),
-                array('pagination' => array('offset' => 0, 'total' => 0, 'limit' => 0), 'result' => array())
+                ['Content-Type' => ['application/json']],
+                ['pagination' => ['offset' => 0, 'total' => 0, 'limit' => 0], 'result' => []]
             );
         }
 
         if (substr_count($this->_request->getUrl(), '/single') == 1) {
             return new Response(
                 200,
-                array('Content-Type' => array('application/json')),
-                array('pagination' => array('offset' => 0, 'total' => 1, 'limit' => 1), 'result' => array(array('id' => '0', 'key' => 0)))
+                ['Content-Type' => ['application/json']],
+                ['pagination' => ['offset' => 0, 'total' => 1, 'limit' => 1], 'result' => [['id' => '0', 'key' => 0]]]
             );
         }
 
         if (substr_count($this->_request->getUrl(), '/basic') === 1) {
-            $results = array(
-                array('id' => '0', 'key' => 0),
-                array('id' => '1', 'key' => 1),
-                array('id' => '2', 'key' => 2),
-                array('id' => '3', 'key' => 3),
-                array('id' => '4', 'key' => 4),
-            );
+            $results = [
+                ['id' => '0', 'key' => 0],
+                ['id' => '1', 'key' => 1],
+                ['id' => '2', 'key' => 2],
+                ['id' => '3', 'key' => 3],
+                ['id' => '4', 'key' => 4],
+            ];
 
             $queryString = parse_url($this->_request->getUrl(), PHP_URL_QUERY);
-            $queryParams = array();
+            $queryParams = [];
             parse_str($queryString, $queryParams);
 
             $offset = (int)$queryParams['offset'];
             $limit = (int)$queryParams['limit'];
 
-            $result = array(
-                'pagination' => array('offset' => $offset, 'total' => 5, 'limit' => $limit),
+            $result = [
+                'pagination' => ['offset' => $offset, 'total' => 5, 'limit' => $limit],
                 'result' => array_slice($results, $offset, $limit),
-            );
+            ];
 
-            return new Response(200, array('Content-Type' => array('application/json')), $result);
+            return new Response(200, ['Content-Type' => ['application/json']], $result);
         }
 
         throw new \Exception('Unexpected request');

@@ -92,7 +92,7 @@ final class Client
      *
      * @var array like [opaqueKey => [cached response (Response), adapter handle (opaque), Request]]
      */
-    private $_handles = array();
+    private $_handles = [];
 
     /**
      * Create a new instance of Client
@@ -118,11 +118,11 @@ final class Client
         $refreshToken = null
     )
     {
-        Util::throwIfNotType(array('string' => array($baseUrl)), true);
-        Util::throwIfNotType(array('string' => array($accessToken, $refreshToken)), true, true);
+        Util::throwIfNotType(['string' => [$baseUrl]], true);
+        Util::throwIfNotType(['string' => [$accessToken, $refreshToken]], true, true);
         Util::ensure(
             true,
-            in_array($cacheMode, array(self::CACHE_MODE_NONE, self::CACHE_MODE_GET, self::CACHE_MODE_TOKEN, self::CACHE_MODE_ALL), true),
+            in_array($cacheMode, [self::CACHE_MODE_NONE, self::CACHE_MODE_GET, self::CACHE_MODE_TOKEN, self::CACHE_MODE_ALL], true),
             '\InvalidArgumentException',
             ['$cacheMode must be a valid cache mode constant']
         );
@@ -147,7 +147,7 @@ final class Client
      */
     public function getTokens()
     {
-        return array($this->_accessToken, $this->_refreshToken);
+        return [$this->_accessToken, $this->_refreshToken];
     }
 
     /**
@@ -158,9 +158,9 @@ final class Client
      *
      * @return mixed opaque handle to be given to endIndex()
      */
-    public function startIndex($resource, array $filters = array())
+    public function startIndex($resource, array $filters = [])
     {
-        Util::throwIfNotType(array('string' => array($resource)), true);
+        Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource) . '?' . Http::buildQueryString($filters);
         return $this->_start($url, 'GET');
     }
@@ -168,7 +168,7 @@ final class Client
     /**
      * @see startIndex()
      */
-    public function index($resource, array $filters = array())
+    public function index($resource, array $filters = [])
     {
         return $this->end($this->startIndex($resource, $filters));
     }
@@ -183,7 +183,7 @@ final class Client
      */
     public function startGet($resource, $id)
     {
-        Util::throwIfNotType(array('string' => array($resource, $id)), true);
+        Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
         return $this->_start($url, 'GET');
     }
@@ -206,9 +206,9 @@ final class Client
      */
     public function startPost($resource, array $data)
     {
-        Util::throwIfNotType(array('string' => array($resource)), true);
+        Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource);
-        return $this->_start($url, 'POST', json_encode($data), array('Content-Type' => 'application/json'));
+        return $this->_start($url, 'POST', json_encode($data), ['Content-Type' => 'application/json']);
     }
 
     /**
@@ -230,9 +230,9 @@ final class Client
      */
     public function startPut($resource, $id, array $data)
     {
-        Util::throwIfNotType(array('string' => array($resource, $id)), true);
+        Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
-        return $this->_start($url, 'PUT', json_encode($data), array('Content-Type' => 'application/json'));
+        return $this->_start($url, 'PUT', json_encode($data), ['Content-Type' => 'application/json']);
     }
 
     /**
@@ -254,10 +254,10 @@ final class Client
      */
     public function startDelete($resource, $id, array $data = null)
     {
-        Util::throwIfNotType(array('string' => array($resource, $id)), true);
+        Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
         $json = $data !== null ? json_encode($data) : null;
-        return $this->_start($url, 'DELETE', $json, array('Content-Type' => 'application/json'));
+        return $this->_start($url, 'DELETE', $json, ['Content-Type' => 'application/json']);
     }
 
     /**
@@ -277,8 +277,8 @@ final class Client
      */
     public function end($handle)
     {
-        Util::throwIfNotType(array('int' => array($handle)));
-        Util::ensure(true, array_key_exists($handle, $this->_handles), '\InvalidArgumentException', array('$handle not found'));
+        Util::throwIfNotType(['int' => [$handle]]);
+        Util::ensure(true, array_key_exists($handle, $this->_handles), '\InvalidArgumentException', ['$handle not found']);
 
         list($cachedResponse, $adapterHandle, $request) = $this->_handles[$handle];
         unset($this->_handles[$handle]);
@@ -376,7 +376,7 @@ final class Client
      *
      * @return mixed opaque handle to be given to end()
      */
-    private function _start($url, $method, $body = null, array $headers = array())
+    private function _start($url, $method, $body = null, array $headers = [])
     {
         $headers['Accept-Encoding'] = 'gzip';
         if ($this->_accessToken === null) {
@@ -394,13 +394,13 @@ final class Client
         if ($request->getMethod() === 'GET' && $this->_cacheMode & self::CACHE_MODE_GET) {
             $cached = $this->_cache->get($request);
             if ($cached !== null) {
-                $this->_handles[] = array($cached, null, $request);
+                $this->_handles[] = [$cached, null, $request];
                 end($this->_handles);
                 return key($this->_handles);
             }
         }
 
-        $this->_handles[] = array(null, $this->_adapter->start($request), $request);
+        $this->_handles[] = [null, $this->_adapter->start($request), $request];
         end($this->_handles);
         return key($this->_handles);
     }

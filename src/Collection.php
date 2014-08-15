@@ -71,9 +71,9 @@ final class Collection implements \Iterator, \Countable
      * @param string $resource name of API resource to request
      * @param array $filters key value pair array of search filters
      */
-    public function __construct(Client $client, $resource, array $filters = array())
+    public function __construct(Client $client, $resource, array $filters = [])
     {
-        Util::throwIfNotType(array('string' => array($resource)), true);
+        Util::throwIfNotType(['string' => [$resource]], true);
 
         $this->_client = $client;
         $this->_resource = $resource;
@@ -120,7 +120,7 @@ final class Collection implements \Iterator, \Countable
             $this->next();
         }
 
-        Util::ensure(false, empty($this->_result), '\OutOfBoundsException', array('Collection contains no elements'));
+        Util::ensure(false, empty($this->_result), '\OutOfBoundsException', ['Collection contains no elements']);
 
         return $this->_offset + $this->_position;
     }
@@ -180,7 +180,8 @@ final class Collection implements \Iterator, \Countable
         Util::ensure(
             true,
             array_key_exists($this->_position, $this->_result),
-            '\OutOfBoundsException', array('Collection contains no element at current position')
+            '\OutOfBoundsException',
+            ['Collection contains no element at current position']
         );
 
         return $this->_result[$this->_position];

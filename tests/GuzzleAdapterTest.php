@@ -25,7 +25,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     public function requestThrowsOnUnsupporetedMethod()
     {
         $adapter = new GuzzleAdapter();
-        $request = new Request('a resource', 'SILLY', null, array());
+        $request = new Request('a resource', 'SILLY', null, []);
         $adapter->end($adapter->start($request));
     }
 

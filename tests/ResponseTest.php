@@ -18,8 +18,8 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
     public function getHttpCode()
     {
         $httpCode = 200;
-        $body = array('doesnt' => 'matter');
-        $headers = array('Content-Type' => array('text/json'));
+        $body = ['doesnt' => 'matter'];
+        $headers = ['Content-Type' => ['text/json']];
         $response = new Response($httpCode, $headers, $body);
         $this->assertSame($httpCode, $response->getHttpCode());
     }
@@ -33,8 +33,8 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
     public function getResponse()
     {
         $httpCode = 200;
-        $body = array('doesnt' => 'matter');
-        $headers = array('Content-Type' => array('text/json'));
+        $body = ['doesnt' => 'matter'];
+        $headers = ['Content-Type' => ['text/json']];
         $response = new Response($httpCode, $headers, $body);
         $this->assertSame($body, $response->getResponse());
     }
@@ -48,8 +48,8 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
     public function getResponseHeaders()
     {
         $httpCode = 200;
-        $body = array('doesnt' => 'matter');
-        $headers = array('Content-Type' => array('text/json'));
+        $body = ['doesnt' => 'matter'];
+        $headers = ['Content-Type' => ['text/json']];
         $response = new Response($httpCode, $headers, $body);
         $this->assertSame($headers, $response->getResponseHeaders());
     }
@@ -73,13 +73,13 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
      */
     public function constructorBadData()
     {
-        $body = array('doesnt' => 'matter');
-        return array(
+        $body = ['doesnt' => 'matter'];
+        return [
             // http code checks
-            array('NaN', array('doesnt' => array('matter')), $body),  // not a number
-            array(99, array('doesnt' => array('matter')), $body),  // less than 100
-            array(601, array('doesnt' => array('matter')), $body),  // greater than 600
-            array(200, array('doesnt' => 'NOT AN ARRAY'), $body),  // header value not an array
-        );
+            ['NaN', ['doesnt' => ['matter']], $body],  // not a number
+            [99, ['doesnt' => ['matter']], $body],  // less than 100
+            [601, ['doesnt' => ['matter']], $body],  // greater than 600
+            [200, ['doesnt' => 'NOT AN ARRAY'], $body],  // header value not an array
+        ];
     }
 }

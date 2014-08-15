@@ -34,7 +34,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', $request->getBody());
-        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
     /**
@@ -49,7 +49,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame('client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token', $request->getBody());
-        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
     /**
@@ -74,7 +74,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame('client_id=id&client_secret=secret&username=username&password=password&grant_type=password', $request->getBody());
-        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
     /**
@@ -89,7 +89,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame('client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token', $request->getBody());
-        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
     /**
@@ -98,11 +98,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      */
     public function parseTokenResponse_noRefreshToken()
     {
-        $response = new Response(
-            200,
-            array('Content-Type' => array('application/json')),
-            array('access_token' => 'theAccessToken', 'expires_in' => 1)
-        );
+        $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'theAccessToken', 'expires_in' => 1]);
 
         list($actualToken, $actualRefreshToken, $actualExpires) = Authentication::parseTokenResponse($response);
 
@@ -119,8 +115,8 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
     {
         $response = new Response(
             200,
-            array('Content-Type' => array('application/json')),
-            array('access_token' => 'theAccessToken', 'expires_in' => 1, 'refresh_token' => 'theRefreshToken')
+            ['Content-Type' => ['application/json']],
+            ['access_token' => 'theAccessToken', 'expires_in' => 1, 'refresh_token' => 'theRefreshToken']
         );
 
         list($actualToken, $actualRefreshToken, $actualExpires) = Authentication::parseTokenResponse($response);
@@ -142,7 +138,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('baseUrl/custom', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', $request->getBody());
-        $this->assertSame(array('Content-Type' => 'application/x-www-form-urlencoded'), $request->getHeaders());
+        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 }
 
