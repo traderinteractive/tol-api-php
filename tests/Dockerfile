@@ -2,8 +2,7 @@ FROM nubs/phpunit
 
 USER root
 
-RUN pacman --sync --refresh --noconfirm --noprogressbar --quiet
-RUN pacman --sync --noconfirm --noprogressbar --quiet php-mongo
+RUN pacman --sync --refresh --noconfirm --noprogressbar --quiet && pacman --sync --noconfirm --noprogressbar --quiet php-mongo
 
 USER build
 
