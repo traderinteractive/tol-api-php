@@ -1,5 +1,4 @@
-# PHP Client for [REST](http://en.wikipedia.org/wiki/Representational_state_transfer) APIs
-
+# tol-api-php
 [![Build Status](http://img.shields.io/travis/dominionenterprises/tol-api-php.svg?style=flat)](https://travis-ci.org/dominionenterprises/tol-api-php)
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/dominionenterprises/tol-api-php.svg?style=flat)](https://scrutinizer-ci.com/g/dominionenterprises/tol-api-php/)
 [![Code Coverage](http://img.shields.io/scrutinizer/coverage/g/dominionenterprises/tol-api-php.svg?style=flat)](https://scrutinizer-ci.com/g/dominionenterprises/tol-api-php/)
