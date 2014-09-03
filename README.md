@@ -127,7 +127,7 @@ if ($response->getHttpCode() !== 204) {
 }
 ```
 
-For making asynchronous requests use the start*() and end() methods:
+For making asynchronous requests use the `start*()` and `end()` methods:
 ```php
 $handleOne = $apiClient->startGet('resourceName', '1234');
 $handleTwo = $apiClient->startGet('resourceName', '5678');
