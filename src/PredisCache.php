@@ -4,10 +4,23 @@ namespace DominionEnterprises\Api;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 
+/**
+ * Class to cache API results in a Redis store.
+ */
 final class PredisCache implements Cache
 {
+    /**
+     * Predis client for storing cache.
+     *
+     * @var \Predis\Client
+     */
     private $_client;
 
+    /**
+     * Construct a cache instance.
+     *
+     * @param \Predis\Client $client The predis client to send data to.
+     */
     public function __construct(\Predis\Client $client)
     {
         $this->_client = $client;
