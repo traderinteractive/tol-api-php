@@ -114,6 +114,7 @@ final class Authentication
     public static function parseTokenResponse(Response $response)
     {
         $parsedJson = $response->getResponse();
+        Util::ensureNot('invalid_client', Arrays::get($parsedJson, 'error'), 'Invalid Credentials');
         Util::ensure(200, $response->getHttpCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
         return [$parsedJson['access_token'], Arrays::get($parsedJson, 'refresh_token'), time() + (int)$parsedJson['expires_in']];
     }

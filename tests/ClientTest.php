@@ -51,6 +51,23 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @covers ::end
      * @uses \DominionEnterprises\Api\Client::startIndex
      * @uses \DominionEnterprises\Api\Client::end
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid Credentials
+     */
+    public function exceptionIsThrownOnBadCredentials()
+    {
+        $adapter = new AccessTokenInvalidClientAdapter();
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url');
+        $client->end($client->startIndex('a resource', []))->getHttpCode();
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
      */
     public function tokenIsRefreshedWith401()
     {
@@ -688,6 +705,23 @@ final class ExceptionAdapter implements Adapter
         }
 
         throw new \Exception('An error');
+    }
+}
+
+final class AccessTokenInvalidClientAdapter implements Adapter
+{
+    private $_request;
+
+    public function start(Request $request)
+    {
+        $this->_request = $request;
+    }
+
+    public function end($handle)
+    {
+        if (substr_count($this->_request->getUrl(), 'token') == 1) {
+            return new Response(200, ['Content-Type' => ['application/json']], ['error' => 'invalid_client']);
+        }
     }
 }
 
