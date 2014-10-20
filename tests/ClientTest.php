@@ -69,6 +69,21 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @uses \DominionEnterprises\Api\Client::startIndex
      * @uses \DominionEnterprises\Api\Client::end
      */
+    public function invalidTokenIsRefreshed()
+    {
+        $adapter = new InvalidAccessTokenAdapter();
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
+     */
     public function tokenIsRefreshedWith401()
     {
         $adapter = new AccessTokenAdapter();
@@ -745,6 +760,35 @@ final class AccessTokenAdapter implements Adapter
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
+            return new Response(200, ['Content-Type' => ['application/json']], []);
+        }
+
+        return new Response(401, ['Content-Type' => ['application/json']], ['error' => 'invalid_grant']);
+    }
+}
+
+final class InvalidAccessTokenAdapter implements Adapter
+{
+    private $_request;
+    private $_count = 0;
+
+    public function start(Request $request)
+    {
+        $this->_request = $request;
+    }
+
+    public function end($handle)
+    {
+        if (substr_count($this->_request->getUrl(), 'token') == 1) {
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
+            ++$this->_count;
+            return $response;
+        }
+
+        $headers = $this->_request->getHeaders();
+        if ($headers['Authorization'] === 'Bearer foo') {
+            return new Response(401, ['Content-Type' => ['application/json']], ['error' => ['code' => 'invalid_token']]);
+        } elseif ($headers['Authorization'] === 'Bearer 0') {
             return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 

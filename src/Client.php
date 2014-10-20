@@ -313,9 +313,13 @@ final class Client
         $parsedJson = $response->getResponse();
         $error = Arrays::get($parsedJson, 'error');
 
+        if (is_array($error)) {
+            $error = Arrays::get($error, 'code');
+        }
+
         //This detects expired access tokens on Apigee
         if ($error !== null) {
-            return $error === 'invalid_grant';
+            return $error === 'invalid_grant' || $error === 'invalid_token';
         }
 
         $fault = Arrays::get($parsedJson, 'fault');
