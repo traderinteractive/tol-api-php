@@ -80,6 +80,34 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @group unit
+     * @covers ::setDefaultHeaders
+     * @uses \DominionEnterprises\Api\Client::setDefaultHeaders
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
+     */
+    public function defaultHeadersArePassed()
+    {
+        $adapter = $this->getMockBuilder('\DominionEnterprises\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter->expects($this->once())->method('start')->with(
+            $this->callback(
+                function($request) {
+                    $this->assertEquals('foo', $request->getHeaders()['testHeader']);
+                    return true;
+                }
+            )
+        );
+        $adapter->expects($this->once())->method('end')->will(
+            $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
+        );
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client->setDefaultHeaders(['testHeader' => 'foo']);
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
      * @covers ::end
      * @uses \DominionEnterprises\Api\Client::startIndex
      * @uses \DominionEnterprises\Api\Client::end

@@ -95,6 +95,13 @@ final class Client
     private $_handles = [];
 
     /**
+     * Array of headers that are passed on every request unless they are overridden
+     *
+     * @var array
+     */
+    private $_defaultHeaders = [];
+
+    /**
      * Create a new instance of Client
      *
      * @param Adapter $adapter
@@ -304,6 +311,18 @@ final class Client
         return $response;
     }
 
+    /**
+     * Set the default headers
+     *
+     * @param array The default headers
+     *
+     * @return void
+     */
+    public function setDefaultHeaders($defaultHeaders)
+    {
+        $this->_defaultHeaders = $defaultHeaders;
+    }
+
     private static function _isExpiredToken(Response $response)
     {
         if ($response->getHttpCode() !== 401) {
@@ -382,6 +401,7 @@ final class Client
      */
     private function _start($url, $method, $body = null, array $headers = [])
     {
+        $headers += $this->_defaultHeaders;
         $headers['Accept-Encoding'] = 'gzip';
         if ($this->_accessToken === null) {
             $this->_setTokenFromCache();
