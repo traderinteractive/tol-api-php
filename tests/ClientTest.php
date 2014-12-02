@@ -51,6 +51,66 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @covers ::end
      * @uses \DominionEnterprises\Api\Client::startIndex
      * @uses \DominionEnterprises\Api\Client::end
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid Credentials
+     */
+    public function exceptionIsThrownOnBadCredentials()
+    {
+        $adapter = new AccessTokenInvalidClientAdapter();
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url');
+        $client->end($client->startIndex('a resource', []))->getHttpCode();
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
+     */
+    public function invalidTokenIsRefreshed()
+    {
+        $adapter = new InvalidAccessTokenAdapter();
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::setDefaultHeaders
+     * @uses \DominionEnterprises\Api\Client::setDefaultHeaders
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
+     */
+    public function defaultHeadersArePassed()
+    {
+        $adapter = $this->getMockBuilder('\DominionEnterprises\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter->expects($this->once())->method('start')->with(
+            $this->callback(
+                function($request) {
+                    $this->assertEquals('foo', $request->getHeaders()['testHeader']);
+                    return true;
+                }
+            )
+        );
+        $adapter->expects($this->once())->method('end')->will(
+            $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
+        );
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client->setDefaultHeaders(['testHeader' => 'foo']);
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     * @uses \DominionEnterprises\Api\Client::startIndex
+     * @uses \DominionEnterprises\Api\Client::end
      */
     public function tokenIsRefreshedWith401()
     {
@@ -691,6 +751,23 @@ final class ExceptionAdapter implements Adapter
     }
 }
 
+final class AccessTokenInvalidClientAdapter implements Adapter
+{
+    private $_request;
+
+    public function start(Request $request)
+    {
+        $this->_request = $request;
+    }
+
+    public function end($handle)
+    {
+        if (substr_count($this->_request->getUrl(), 'token') == 1) {
+            return new Response(200, ['Content-Type' => ['application/json']], ['error' => 'invalid_client']);
+        }
+    }
+}
+
 final class AccessTokenAdapter implements Adapter
 {
     private $_request;
@@ -711,6 +788,35 @@ final class AccessTokenAdapter implements Adapter
 
         $headers = $this->_request->getHeaders();
         if ($headers['Authorization'] === 'Bearer 1') {
+            return new Response(200, ['Content-Type' => ['application/json']], []);
+        }
+
+        return new Response(401, ['Content-Type' => ['application/json']], ['error' => 'invalid_grant']);
+    }
+}
+
+final class InvalidAccessTokenAdapter implements Adapter
+{
+    private $_request;
+    private $_count = 0;
+
+    public function start(Request $request)
+    {
+        $this->_request = $request;
+    }
+
+    public function end($handle)
+    {
+        if (substr_count($this->_request->getUrl(), 'token') == 1) {
+            $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => $this->_count, 'expires_in' => 1]);
+            ++$this->_count;
+            return $response;
+        }
+
+        $headers = $this->_request->getHeaders();
+        if ($headers['Authorization'] === 'Bearer foo') {
+            return new Response(401, ['Content-Type' => ['application/json']], ['error' => ['code' => 'invalid_token']]);
+        } elseif ($headers['Authorization'] === 'Bearer 0') {
             return new Response(200, ['Content-Type' => ['application/json']], []);
         }
 
