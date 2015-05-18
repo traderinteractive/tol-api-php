@@ -39,6 +39,13 @@ final class Client
     const CACHE_MODE_ALL = 3;
 
     /**
+     * Flag to refresh cache on ALL requests
+     *
+     * @const int
+     */
+    const CACHE_MODE_REFRESH = 4;
+
+    /**
      * Base url of the API server
      *
      * @var string
@@ -129,7 +136,11 @@ final class Client
         Util::throwIfNotType(['string' => [$accessToken, $refreshToken]], true, true);
         Util::ensure(
             true,
-            in_array($cacheMode, [self::CACHE_MODE_NONE, self::CACHE_MODE_GET, self::CACHE_MODE_TOKEN, self::CACHE_MODE_ALL], true),
+            in_array(
+                $cacheMode,
+                [self::CACHE_MODE_NONE, self::CACHE_MODE_GET, self::CACHE_MODE_TOKEN, self::CACHE_MODE_ALL, self::CACHE_MODE_REFRESH],
+                true
+            ),
             '\InvalidArgumentException',
             ['$cacheMode must be a valid cache mode constant']
         );
@@ -304,7 +315,7 @@ final class Client
             $response = $this->_adapter->end($this->_adapter->start($request));
         }
 
-        if ($this->_cacheMode & self::CACHE_MODE_GET && $request->getMethod() === 'GET') {
+        if (($this->_cacheMode === self::CACHE_MODE_REFRESH || $this->_cacheMode & self::CACHE_MODE_GET) && $request->getMethod() === 'GET') {
             $this->_cache->set($request, $response);
         }
 
@@ -363,7 +374,7 @@ final class Client
 
         list($this->_accessToken, $this->_refreshToken, $expires) = Authentication::parseTokenResponse($response);
 
-        if ($this->_cacheMode & self::CACHE_MODE_TOKEN) {
+        if ($this->_cache === self::CACHE_MODE_REFRESH || $this->_cacheMode & self::CACHE_MODE_TOKEN) {
             $this->_cache->set($request, $response, $expires);
         }
     }
