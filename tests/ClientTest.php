@@ -502,6 +502,34 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @covers ::end
      * @covers ::startGet
      */
+    public function get_disabledCache()
+    {
+        $cache = new ArrayCache();
+        $request = new Request('baseUrl/a+url/id', 'not under test');
+        $unexpected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
+        $expected = new Response(200, ['Content-Type' => ['application/json']], []);
+        $cache->set($request, $unexpected);
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $adapter = $this->getMockBuilder('\DominionEnterprises\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter->expects($this->once())->method('start');
+        $adapter->expects($this->once())->method('end')->will(
+            $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
+        );
+        $client = new Client($adapter, $authentication, 'baseUrl', Client::CACHE_MODE_REFRESH, $cache, 'foo');
+        $actual = $client->end($client->startGet('a url', 'id'));
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, $cache->get($request));
+        $client = new Client(new TokenAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $actual = $client->end($client->startGet('a url', 'id'));
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::end
+     * @covers ::startGet
+     */
     public function get_tokenNotInCache()
     {
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
