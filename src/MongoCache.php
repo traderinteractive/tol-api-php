@@ -19,15 +19,20 @@ final class MongoCache implements Cache
     /**
      * Construct a new instance of MongoCache
      *
-     * @param string $url mongo url
-     * @param string $db name of mongo database
-     * @param string $collection name of mongo collection
+     * @param string|\MongoCollection $urlOrCollection mongo url or the collection in which the cache should be stored
+     * @param string                  $db              name of mongo database
+     * @param string                  $collection      name of mongo collection
      */
-    public function __construct($url, $db, $collection)
+    public function __construct($urlOrCollection, $db = null, $collection = null)
     {
         Util::ensure(true, extension_loaded('mongo'), '\RuntimeException', ['mongo extension is required for ' . __CLASS__]);
-        Util::throwIfNotType(['string' => [$url, $db, $collection]], true);
-        $mongo = new \MongoClient($url);
+        if ($urlOrCollection instanceof \MongoCollection) {
+            $this->_collection = $urlOrCollection;
+            return;
+        }
+
+        Util::throwIfNotType(['string' => [$urlOrCollection, $db, $collection]], true);
+        $mongo = new \MongoClient($urlOrCollection);
         $this->_collection = $mongo->selectDb($db)->selectCollection($collection);
     }
 
