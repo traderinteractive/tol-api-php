@@ -181,4 +181,37 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull($cache->get($request));
     }
+
+    /**
+     * Verifies can be constructed with MongoCollection instance.
+     *
+     * @test
+     * @covers ::__construct
+     * @covers ::set
+     *
+     * @return void
+     */
+    public function construct_withCollection()
+    {
+        $expires = 'Sun, 30 Jun 2013 13:53:50 GMT';
+        $expected = [
+            '_id' => 'a url|',
+            'httpCode' => 200,
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
+        ];
+
+        $cache = new MongoCache($this->_collection);
+
+        $request = new Request('a url', 'not under test');
+        $response = new Response(200, $expected['headers'], $expected['body']);
+
+        $cache->set($request, $response);
+
+        $this->assertSame(1, $this->_collection->count());
+        $actual = $this->_collection->findOne();
+        $this->assertSame(strtotime($expires), $actual['expires']->sec);
+        unset($actual['expires']);
+        $this->assertSame($expected, $actual);
+    }
 }
