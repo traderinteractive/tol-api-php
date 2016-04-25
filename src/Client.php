@@ -213,6 +213,48 @@ final class Client
     {
         return $this->end($this->startGet($resource, $id));
     }
+    /**
+     * Get the details of an API resource based on $id and parameters
+     *
+     * @param string $resource
+     * @param string $id
+     * @param string $params Formatted parameter string, e.g., "realmId=5&minDate=1450674000&maxDate=1451278799"
+     * @param boolean $urlencode
+     *
+     * @return Response
+     */
+    public function startGetWithParams($resource, $id, $params, $urlencode)
+    {
+        $url = "{$this->_baseUrl}";
+        $url .= '/' . ($urlencode ? urlencode($resource) : $resource);
+        $url .= '/' . ($urlencode ? urlencode($id) : $id);
+        if (!empty($params)) {
+            $url .= '?' . ($urlencode ? urlencode($params) : $params);
+        }
+
+        return $this->_start($url, 'GET');
+    }
+
+    /**
+     * Get the details of an API resource based on $id and parameters
+     *
+     * @param string $resource
+     * @param string $id
+     * @param array $arParams Array of URL parameters 
+     * @param boolean $arOptions Array of options to apply in forming the URL string
+     *
+     * @return array Response
+     */
+    public function getWithParams($resource, $id, array $arParams = [], array $arOptions = [])
+    {
+        Util::throwIfNotType(['string' => [$resource, $id]], true);
+        // set options here.
+        $urlencode = array_key_exists('urlencode', $arOptions) ? $urlencode = $arOptions['urlencode'] : false;
+
+        $params = !empty($arParams) ? http_build_query($arParams) : '';
+
+        return $this->end($this->startGetWithParams($resource, $id, $params, $urlencode));
+    }
 
     /**
      * Create a new instance of an API resource using the provided $data
