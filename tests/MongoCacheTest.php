@@ -22,8 +22,8 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->_mongoUrl = getenv('TESTING_MONGO_URL') ?: 'mongodb://localhost:27017';
-        $mongo = new \MongoClient($this->_mongoUrl);
-        $this->_collection = $mongo->selectDb(self::MONGO_DB)->selectCollection(self::MONGO_COLLECTION);
+        $mongo = new \MongoDB\Client($this->_mongoUrl, [], ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']]);
+        $this->_collection = $mongo->selectCollection(self::MONGO_DB, self::MONGO_COLLECTION);
         $this->_collection->drop();
     }
 
@@ -51,7 +51,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(1, $this->_collection->count());
         $actual = $this->_collection->findOne();
-        $this->assertSame(strtotime($expires), $actual['expires']->sec);
+        $this->assertSame(strtotime($expires), $actual['expires']->toDateTime()->getTimestamp());
         unset($actual['expires']);
         $this->assertSame($expected, $actual);
     }
@@ -79,7 +79,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(1, $this->_collection->count());
         $actual = $this->_collection->findOne();
-        $this->assertSame(strtotime($expires), $actual['expires']->sec);
+        $this->assertSame(strtotime($expires), $actual['expires']->toDateTime()->getTimestamp());
         unset($actual['expires']);
         $this->assertSame($expected, $actual);
     }
@@ -108,7 +108,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     public function get()
     {
         $document = [ '_id' => 'a url|', 'httpCode' => 200, 'body' => ['doesnt' => 'matter'], 'headers' => ['key' => ['value']]];
-        $this->_collection->insert($document);
+        $this->_collection->insertOne($document);
 
         $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
@@ -140,7 +140,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $cache->set($request, $response);
 
-        $this->_collection->remove(['_id' => $expected['_id']]);
+        $this->_collection->deleteOne(['_id' => $expected['_id']]);
 
         $this->assertNull($cache->get($request));
     }
