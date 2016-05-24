@@ -1,12 +1,10 @@
 language: php
 php:
+  - 7.0
   - 5.6
-  - 5.4
 env:
-  - EXT_VERSION=1.3.7 DB_PACKAGE=mongodb-10gen
-  - EXT_VERSION=1.3.7 DB_PACKAGE=mongodb-org
-  - EXT_VERSION=1.5.4 DB_PACKAGE=mongodb-10gen
-  - EXT_VERSION=1.5.4 DB_PACKAGE=mongodb-org
+  - EXT_VERSION=1.1 DB_PACKAGE=mongodb-10gen
+  - EXT_VERSION=1.1 DB_PACKAGE=mongodb-org
 services: 
   - redis-server
 before_install:
@@ -16,7 +14,7 @@ before_install:
   - "sudo apt-get install ${DB_PACKAGE}"
 before_script:
   - composer self-update || true
-  - yes '' | pecl install -f mongo-${EXT_VERSION}
+  - yes '' | pecl install -f mongodb-${EXT_VERSION}
     # wait for mongo, start is only needed for 2.4 package, see http://tldp.org/LDP/abs/html/devref1.html for description of this syntax.
   - sudo service mongodb start; bash -c 'while ! exec 6<>/dev/tcp/localhost/27017; do echo "$(date) - still trying to connect to mongo"; sleep 1; done'
 script: ./build.php
