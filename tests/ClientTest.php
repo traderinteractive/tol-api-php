@@ -618,7 +618,7 @@ final class IndexAdapter implements Adapter
             return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
         }
 
-        if ($this->_request->getMethod() === 'GET' && $this->_request->getUrl() === 'baseUrl/v1/resource+name?the+name=the+value') {
+        if ($this->_request->getMethod() === 'GET' && urldecode($this->_request->getUrl()) === 'baseUrl/v1/resource name?the name=the value') {
             return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
