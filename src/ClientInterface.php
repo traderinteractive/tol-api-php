@@ -4,7 +4,7 @@ namespace DominionEnterprises\Api;
 /**
  * Client for apis
  */
-interface ClientContract
+interface ClientInterface
 {
     /**
      * Get access token and refresh token

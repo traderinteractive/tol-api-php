@@ -9,7 +9,7 @@ use DominionEnterprises\Util\Http;
  * Client for apis
  */
 final class Client
-    implements ClientContract
+    implements ClientInterface
 {
     /**
      * Flag to cache no requests
