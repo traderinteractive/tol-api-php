@@ -2,15 +2,12 @@
 
 namespace DominionEnterprises\Api;
 use DominionEnterprises\Util\Http;
-use Guzzle\Http\Exception\BadResponseException;
 
 /**
  * Defines unit tests for the GuzzleAdapter class
  *
  * @coversDefaultClass \DominionEnterprises\Api\GuzzleAdapter
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
- * @uses \DominionEnterprises\Api\GuzzleAdapter::__construct
+ * @covers ::<private>
  */
 final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
 {
@@ -47,7 +44,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
         try {
             $adapter->end($handleOne);
             $this->fail();
-        } catch (BadResponseException $e) {
+        } catch (\UnexpectedValueException $e) {
         } catch (\Exception $e) {
             $this->fail();
         }
