@@ -78,7 +78,11 @@ final class GuzzleAdapter implements Adapter
                     $this->_exceptions[$handle] = $multiException->getExceptionForFailedRequest($request);
                 } else {
                     try {
-                        $response->json();
+                        //If body is not empty, attempt to json decode
+                        if ($response->getBody(true) !== '') {
+                            $response->json();
+                        }
+
                         $this->_responses[$handle] = $response;
                     } catch (\Exception $e) {
                         $this->_exceptions[$handle] = BadResponseException::factory($request, $response);
@@ -98,7 +102,8 @@ final class GuzzleAdapter implements Adapter
         if (array_key_exists($endHandle, $this->_responses)) {
             $response = $this->_responses[$endHandle];
             unset($this->_responses[$endHandle]);
-            return new Response($response->getStatusCode(), $response->getHeaders()->toArray(), $response->json());
+            $body = $response->getBody(true) !== '' ? $response->json() : [];
+            return new Response($response->getStatusCode(), $response->getHeaders()->toArray(), $body);
         }
 
         throw new \InvalidArgumentException('$endHandle not found');
