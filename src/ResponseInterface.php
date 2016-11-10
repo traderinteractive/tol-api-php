@@ -8,7 +8,6 @@ use DominionEnterprises\Util;
  */
 interface ResponseInterface
 {
-
     /**
      * Returns the HTTP status code of the response
      *
@@ -30,4 +29,3 @@ interface ResponseInterface
      */
     function getResponseHeaders();
 }
-
