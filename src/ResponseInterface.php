@@ -1,7 +1,6 @@
 <?php
 
 namespace DominionEnterprises\Api;
-use DominionEnterprises\Util;
 
 /**
  * Represents a response to an API request
