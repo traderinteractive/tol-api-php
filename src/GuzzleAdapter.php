@@ -55,7 +55,8 @@ final class GuzzleAdapter implements Adapter
      */
     public function start(Request $request)
     {
-        $this->_promises[] = $this->_client->requestAsync(
+        $handle = uniqid();
+        $this->_promises[$handle] = $this->_client->requestAsync(
             $request->getMethod(),
             $request->getUrl(),
             [
@@ -64,8 +65,7 @@ final class GuzzleAdapter implements Adapter
             ]
         );
 
-        end($this->_promises);
-        return key($this->_promises);
+        return $handle;
     }
 
     /**
@@ -75,8 +75,6 @@ final class GuzzleAdapter implements Adapter
      */
     public function end($endHandle)
     {
-        Util::throwIfNotType(['int' => [$endHandle]]);
-
         $results = $this->fulfillPromises($this->_promises, $this->_exceptions);
         foreach ($results as $handle => $response) {
             try {
