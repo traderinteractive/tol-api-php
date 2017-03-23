@@ -272,8 +272,13 @@ final class Client implements ClientInterface
      */
     public function startDelete($resource, $id, array $data = null)
     {
-        Util::throwIfNotType(['string' => [$resource, $id]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
+        Util::throwIfNotType(['string' => [$resource]], true);
+        $url = "{$this->_baseUrl}/" . urlencode($resource);
+        if ($id !== null) {
+            Util::throwIfNotType(['string' => [$id]], true);
+            $url .= '/' . urlencode($id);
+        }
+
         $json = $data !== null ? json_encode($data) : null;
         return $this->_start($url, 'DELETE', $json, ['Content-Type' => 'application/json']);
     }
