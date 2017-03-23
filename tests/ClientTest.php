@@ -287,6 +287,25 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Verify behavior of startDelete when no id is given.
+     *
+     * @test
+     * @covers ::startDelete
+     *
+     * @return void
+     */
+    public function deleteWithoutId()
+    {
+        $adapter = new DeleteAdapter();
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'baseUrl/v1');
+        $client->startDelete('resource', null, ['foo' => 'bar']);
+        $this->assertSame('baseUrl/v1/resource', $adapter->request->getUrl());
+        $this->assertSame('DELETE', $adapter->request->getMethod());
+        $this->assertSame(json_encode(['foo' => 'bar']), $adapter->request->getBody());
+    }
+
+    /**
      * Verfiy delete creates the request body properly
      *
      * @test
