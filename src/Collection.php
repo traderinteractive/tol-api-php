@@ -186,4 +186,18 @@ final class Collection implements \Iterator, \Countable
 
         return $this->_result[$this->_position];
     }
+
+    /**
+     * Returns the values from a single field this collection, identified by the given $key.
+     *
+     * @param string $key The name of the field for which the values will be returned.
+     *
+     * @return iterable
+     */
+    public function column($key)
+    {
+        foreach ($this as $item) {
+            yield Util\Arrays::get($item, $key);
+        }
+    }
 }
