@@ -259,6 +259,29 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
             iterator_to_array($collection->column('key'))
         );
     }
+
+    /**
+     * Verifies basic behavior of toArray().
+     *
+     * @test
+     * @covers ::toArray
+     */
+    public function toArray()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['id' => '0', 'key' => 0],
+                ['id' => '1', 'key' => 1],
+                ['id' => '2', 'key' => 2],
+                ['id' => '3', 'key' => 3],
+                ['id' => '4', 'key' => 4],
+            ],
+            $collection->toArray()
+        );
+    }
 }
 
 final class CollectionAdapter implements Adapter
