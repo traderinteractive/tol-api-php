@@ -200,4 +200,20 @@ final class Collection implements \Iterator, \Countable
             yield Util\Arrays::get($item, $key);
         }
     }
+
+    /**
+     * Return an iterable generator containing only the fields specified in the $keys array.
+     *
+     * @param array $keys The list of field names to be returned.
+     *
+     * @return \Generator
+     */
+    public function select(array $keys)
+    {
+        foreach ($this as $item) {
+            $result = array_fill_keys($keys, null);
+            Util\Arrays::copyIfKeysExist($item, $result, $keys);
+            yield  $result;
+        }
+    }
 }

@@ -259,6 +259,93 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
             iterator_to_array($collection->column('key'))
         );
     }
+
+    /**
+     * Verifies basic behavior of select().
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function select()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['key' => 0],
+                ['key' => 1],
+                ['key' => 2],
+                ['key' => 3],
+                ['key' => 4],
+            ],
+            iterator_to_array($collection->select(['key']))
+        );
+    }
+
+    /**
+     * Verifies behavior of select() with multiple keys.
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function selectMultipleKeys()
+    {
+        $adapter = new CollectionAdapter();
+        $adapter->results = [
+            ['id' => 1, 'name' => 'Sam', 'score' => 99],
+            ['id' => 2, 'name' => 'Bob', 'score' => 83],
+            ['id' => 3, 'name' => 'Jon', 'score' => 75],
+            ['id' => 4, 'name' => 'Ted', 'score' => 64],
+        ];
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['id' => 1, 'score' => 99],
+                ['id' => 2, 'score' => 83],
+                ['id' => 3, 'score' => 75],
+                ['id' => 4, 'score' => 64],
+            ],
+            iterator_to_array($collection->select(['id', 'score']))
+        );
+    }
+
+    /**
+     * Verifies behavior of select() when results have missing keys.
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function selectMissingKeys()
+    {
+        $adapter = new CollectionAdapter();
+        $adapter->results = [
+            ['id' => 1, 'name' => 'Sam', 'score' => 99],
+            ['id' => 2, 'name' => 'Bob'],
+            ['id' => 3, 'name' => 'Jon', 'score' => 75],
+            ['id' => 4, 'score' => 64],
+        ];
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['name' => 'Sam', 'score' => 99],
+                ['name' => 'Bob', 'score' => null],
+                ['name' => 'Jon', 'score' => 75],
+                ['name' => null, 'score' => 64],
+            ],
+            iterator_to_array($collection->select(['name', 'score']))
+        );
+    }
 }
 
 final class CollectionAdapter implements Adapter
