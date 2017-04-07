@@ -242,6 +242,23 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
             $this->assertSame(['id' => '0', 'key' => 0], $item);
         }
     }
+
+    /**
+     * Verifies basic behavior of column().
+     *
+     * @test
+     * @covers ::column
+     */
+    public function column()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [0, 1, 2, 3, 4],
+            iterator_to_array($collection->column('key'))
+        );
+    }
 }
 
 final class CollectionAdapter implements Adapter
