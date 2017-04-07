@@ -300,7 +300,6 @@ final class Client implements ClientInterface
      */
     public function end($handle)
     {
-        Util::throwIfNotType(['int' => [$handle]]);
         Util::ensure(true, array_key_exists($handle, $this->_handles), '\InvalidArgumentException', ['$handle not found']);
 
         list($cachedResponse, $adapterHandle, $request) = $this->_handles[$handle];
@@ -434,14 +433,15 @@ final class Client implements ClientInterface
         if ($request->getMethod() === 'GET' && $this->_cacheMode & self::CACHE_MODE_GET) {
             $cached = $this->_cache->get($request);
             if ($cached !== null) {
-                $this->_handles[] = [$cached, null, $request];
-                end($this->_handles);
-                return key($this->_handles);
+                //The response is cache. Generate a key for the _handles array
+                $key = uniqid();
+                $this->_handles[$key] = [$cached, null, $request];
+                return $key;
             }
         }
 
-        $this->_handles[] = [null, $this->_adapter->start($request), $request];
-        end($this->_handles);
-        return key($this->_handles);
+        $key = $this->_adapter->start($request);
+        $this->_handles[$key] = [null, $key, $request];
+        return $key;
     }
 }
