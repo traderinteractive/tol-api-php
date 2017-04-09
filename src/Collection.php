@@ -216,4 +216,25 @@ final class Collection implements \Iterator, \Countable
             yield  $result;
         }
     }
+
+    /**
+     * Return an iterable generator containing only the fields specified in the $keys array, filtered by the $where callable.
+     *
+     * @param array $keys The list of field names to be returned.
+     * @param callable $where Callable used to filter values from the generator. The callable must return a bool value.
+     *
+     * @return \Generator
+     */
+    public function selectWhere(array $keys, callable $where)
+    {
+        foreach ($this as $item) {
+            if ($where($item) === false) {
+                continue;
+            }
+
+            $result = array_fill_keys($keys, null);
+            Util\Arrays::copyIfKeysExist($item, $result, $keys);
+            yield  $result;
+        }
+    }
 }
