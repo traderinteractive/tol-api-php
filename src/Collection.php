@@ -200,4 +200,14 @@ final class Collection implements \Iterator, \Countable
             yield Util\Arrays::get($item, $key);
         }
     }
+
+    /**
+     * Returns an array representation of this collection
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return iterator_to_array($this);
+    }
 }
