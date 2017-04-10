@@ -265,6 +265,14 @@ final class CollectionAdapter implements Adapter
 {
     private $_request;
 
+    public $results = [
+        ['id' => '0', 'key' => 0],
+        ['id' => '1', 'key' => 1],
+        ['id' => '2', 'key' => 2],
+        ['id' => '3', 'key' => 3],
+        ['id' => '4', 'key' => 4],
+    ];
+
     public function start(Request $request)
     {
         $this->_request = $request;
@@ -293,14 +301,6 @@ final class CollectionAdapter implements Adapter
         }
 
         if (substr_count($this->_request->getUrl(), '/basic') === 1) {
-            $results = [
-                ['id' => '0', 'key' => 0],
-                ['id' => '1', 'key' => 1],
-                ['id' => '2', 'key' => 2],
-                ['id' => '3', 'key' => 3],
-                ['id' => '4', 'key' => 4],
-            ];
-
             $queryString = parse_url($this->_request->getUrl(), PHP_URL_QUERY);
             $queryParams = [];
             parse_str($queryString, $queryParams);
@@ -309,8 +309,12 @@ final class CollectionAdapter implements Adapter
             $limit = (int)$queryParams['limit'];
 
             $result = [
-                'pagination' => ['offset' => $offset, 'total' => 5, 'limit' => $limit],
-                'result' => array_slice($results, $offset, $limit),
+                'pagination' => [
+                    'offset' => $offset,
+                    'total' => count($this->results),
+                    'limit' => min($limit, count($this->results)),
+                ],
+                'result' => array_slice($this->results, $offset, $limit),
             ];
 
             return new Response(200, ['Content-Type' => ['application/json']], $result);
