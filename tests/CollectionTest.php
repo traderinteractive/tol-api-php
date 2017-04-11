@@ -259,11 +259,106 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
             iterator_to_array($collection->column('key'))
         );
     }
+
+    /**
+     * Verifies basic behavior of select().
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function select()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['key' => 0],
+                ['key' => 1],
+                ['key' => 2],
+                ['key' => 3],
+                ['key' => 4],
+            ],
+            iterator_to_array($collection->select(['key']))
+        );
+    }
+
+    /**
+     * Verifies behavior of select() with multiple keys.
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function selectMultipleKeys()
+    {
+        $adapter = new CollectionAdapter();
+        $adapter->results = [
+            ['id' => 1, 'name' => 'Sam', 'score' => 99],
+            ['id' => 2, 'name' => 'Bob', 'score' => 83],
+            ['id' => 3, 'name' => 'Jon', 'score' => 75],
+            ['id' => 4, 'name' => 'Ted', 'score' => 64],
+        ];
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['id' => 1, 'score' => 99],
+                ['id' => 2, 'score' => 83],
+                ['id' => 3, 'score' => 75],
+                ['id' => 4, 'score' => 64],
+            ],
+            iterator_to_array($collection->select(['id', 'score']))
+        );
+    }
+
+    /**
+     * Verifies behavior of select() when results have missing keys.
+     *
+     * @test
+     * @covers ::select
+     *
+     * @return void
+     */
+    public function selectMissingKeys()
+    {
+        $adapter = new CollectionAdapter();
+        $adapter->results = [
+            ['id' => 1, 'name' => 'Sam', 'score' => 99],
+            ['id' => 2, 'name' => 'Bob'],
+            ['id' => 3, 'name' => 'Jon', 'score' => 75],
+            ['id' => 4, 'score' => 64],
+        ];
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client($adapter, $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $this->assertSame(
+            [
+                ['name' => 'Sam', 'score' => 99],
+                ['name' => 'Bob', 'score' => null],
+                ['name' => 'Jon', 'score' => 75],
+                ['name' => null, 'score' => 64],
+            ],
+            iterator_to_array($collection->select(['name', 'score']))
+        );
+    }
 }
 
 final class CollectionAdapter implements Adapter
 {
     private $_request;
+
+    public $results = [
+        ['id' => '0', 'key' => 0],
+        ['id' => '1', 'key' => 1],
+        ['id' => '2', 'key' => 2],
+        ['id' => '3', 'key' => 3],
+        ['id' => '4', 'key' => 4],
+    ];
 
     public function start(Request $request)
     {
@@ -293,14 +388,6 @@ final class CollectionAdapter implements Adapter
         }
 
         if (substr_count($this->_request->getUrl(), '/basic') === 1) {
-            $results = [
-                ['id' => '0', 'key' => 0],
-                ['id' => '1', 'key' => 1],
-                ['id' => '2', 'key' => 2],
-                ['id' => '3', 'key' => 3],
-                ['id' => '4', 'key' => 4],
-            ];
-
             $queryString = parse_url($this->_request->getUrl(), PHP_URL_QUERY);
             $queryParams = [];
             parse_str($queryString, $queryParams);
@@ -309,8 +396,12 @@ final class CollectionAdapter implements Adapter
             $limit = (int)$queryParams['limit'];
 
             $result = [
-                'pagination' => ['offset' => $offset, 'total' => 5, 'limit' => $limit],
-                'result' => array_slice($results, $offset, $limit),
+                'pagination' => [
+                    'offset' => $offset,
+                    'total' => count($this->results),
+                    'limit' => min($limit, count($this->results)),
+                ],
+                'result' => array_slice($this->results, $offset, $limit),
             ];
 
             return new Response(200, ['Content-Type' => ['application/json']], $result);
