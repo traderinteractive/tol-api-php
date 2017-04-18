@@ -346,6 +346,32 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
             iterator_to_array($collection->select(['name', 'score']))
         );
     }
+
+    /**
+     * Verifies basic behavior of selectWhere().
+     *
+     * @test
+     * @covers ::selectWhere
+     *
+     * @return void
+     */
+    public function selectWhere()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
+        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $where = function (array $item) {
+            return ($item['key'] % 2 === 0);
+        };
+        $this->assertSame(
+            [
+                ['id' => '0'],
+                ['id' => '2'],
+                ['id' => '4'],
+            ],
+            iterator_to_array($collection->selectWhere(['id'], $where))
+        );
+    }
 }
 
 final class CollectionAdapter implements Adapter
