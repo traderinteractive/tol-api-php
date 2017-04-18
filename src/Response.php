@@ -6,7 +6,7 @@ use DominionEnterprises\Util;
 /**
  * Represents a response to an API request
  */
-final class Response
+final class Response implements ResponseInterface
 {
     /**
      * The http status of the response.
