@@ -196,22 +196,27 @@ final class Client implements ClientInterface
      *
      * @param string $resource
      * @param string $id
+     * @param array  $parameters
      *
      * @return mixed opaque handle to be given to endGet()
      */
-    public function startGet($resource, $id)
+    public function startGet($resource, $id, array $parameters = [])
     {
         Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
+        if (!empty($parameters)) {
+            $url .= '?' . Http::buildQueryString($parameters);
+        }
+
         return $this->_start($url, 'GET');
     }
 
     /**
      * @see startGet()
      */
-    public function get($resource, $id)
+    public function get($resource, $id, array $parameters = [])
     {
-        return $this->end($this->startGet($resource, $id));
+        return $this->end($this->startGet($resource, $id, $parameters));
     }
 
     /**
