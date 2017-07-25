@@ -37,12 +37,12 @@ interface ClientInterface
      *
      * @return mixed opaque handle to be given to endGet()
      */
-    function startGet($resource, $id, array $parameters);
+    function startGet($resource, $id, array $parameters = []);
 
     /**
      * @see startGet()
      */
-    function get($resource, $id, array $parameters);
+    function get($resource, $id, array $parameters = []);
 
     /**
      * Create a new instance of an API resource using the provided $data
