@@ -234,6 +234,24 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @covers ::get
+     * @covers ::startGet
+     * @uses \DominionEnterprises\Api\Client::end
+     */
+    public function getWithParameters()
+    {
+        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $client = new Client(new GetWithParametersAdapter(), $authentication, 'baseUrl/v1');
+
+        $response = $client->get('resource name', 'the id', ['foo' => 'bar']);
+
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
+    }
+
+    /**
+     * @test
      * @covers ::put
      * @covers ::startPut
      * @uses \DominionEnterprises\Api\Client::end
@@ -642,6 +660,29 @@ final class GetAdapter implements Adapter
         }
 
         if ($this->_request->getMethod() === 'GET' && $this->_request->getUrl() === 'baseUrl/v1/resource+name/the+id') {
+            return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
+        }
+
+        throw new \Exception('Unexpected request');
+    }
+}
+
+final class GetWithParametersAdapter implements Adapter
+{
+    private $_request;
+
+    public function start(Request $request)
+    {
+        $this->_request = $request;
+    }
+
+    public function end($handle)
+    {
+        if (substr($this->_request->getUrl(), -5) === 'token') {
+            return new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'a token', 'expires_in' => 1]);
+        }
+
+        if ($this->_request->getMethod() === 'GET' && $this->_request->getUrl() === 'baseUrl/v1/resource+name/the+id?foo=bar') {
             return new Response(200, ['Content-Type' => ['application/json']], ['key' => 'value']);
         }
 
