@@ -84,12 +84,12 @@ interface ClientInterface
      *
      * @return mixed opaque handle to be given to endDelete()
      */
-    function startDelete($resource, $id, array $data = null);
+    function startDelete($resource, $id = null, array $data = null);
 
     /**
      * @see startDelete()
      */
-    function delete($resource, $id, array $data = null);
+    function delete($resource, $id = null, array $data = null);
 
     /**
      * Get response of start*() method
