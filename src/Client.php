@@ -275,7 +275,7 @@ final class Client implements ClientInterface
      *
      * @return mixed opaque handle to be given to endDelete()
      */
-    public function startDelete($resource, $id, array $data = null)
+    public function startDelete($resource, $id = null, array $data = null)
     {
         Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->_baseUrl}/" . urlencode($resource);
@@ -291,7 +291,7 @@ final class Client implements ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete($resource, $id, array $data = null)
+    public function delete($resource, $id = null, array $data = null)
     {
         return $this->end($this->startDelete($resource, $id, $data));
     }
