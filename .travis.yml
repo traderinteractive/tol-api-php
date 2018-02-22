@@ -1,13 +1,22 @@
 language: php
-dist: trusty
 php:
   - 7.0
+  - 7.1
+  - 7.2
+  - nightly
 services:
   - redis-server
   - mongodb
+env:
+  - PREFER_LOWEST="--prefer-lowest --prefer-stable"
+  - PREFER_LOWEST=""
+matrix:
+  fast_finish: true
+  allow_failures:
+     - php: nightly
 before_script:
-  - composer self-update || true
   - yes '' | pecl install -f mongodb-1.1
-  - bash -c 'while ! exec 6<>/dev/tcp/localhost/27017; do echo "$(date) - still trying to connect to mongo"; sleep 1; done'
-script: ./build.php
-after_script: ./vendor/bin/coveralls -v
+  - composer update $PREFER_LOWEST
+script:
+  - ./vendor/bin/phpunit --coverage-clover clover.xml
+after_success: ./vendor/bin/coveralls -v
