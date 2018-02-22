@@ -1,15 +1,15 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Defines unit tests for the MongoCache class
  *
- * @coversDefaultClass \DominionEnterprises\Api\MongoCache
+ * @coversDefaultClass \TraderInteractive\Api\MongoCache
  * @covers ::<private>
- * @uses \DominionEnterprises\Api\MongoCache::__construct
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
+ * @uses \TraderInteractive\Api\MongoCache::__construct
+ * @uses \TraderInteractive\Api\Request
+ * @uses \TraderInteractive\Api\Response
  */
 final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 {
@@ -89,7 +89,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::set
-     * @uses \DominionEnterprises\Api\MongoCache::get
+     * @uses \TraderInteractive\Api\MongoCache::get
      */
     public function set_noExpires()
     {
@@ -122,7 +122,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::get
-     * @uses \DominionEnterprises\Api\MongoCache::set
+     * @uses \TraderInteractive\Api\MongoCache::set
      */
     public function get_notFound()
     {
@@ -150,8 +150,8 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::ensureIndexes
-     * @uses \DominionEnterprises\Api\MongoCache::set
-     * @uses \DominionEnterprises\Api\MongoCache::get
+     * @uses \TraderInteractive\Api\MongoCache::set
+     * @uses \TraderInteractive\Api\MongoCache::get
      */
     public function get_expired()
     {

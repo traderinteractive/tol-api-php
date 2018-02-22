@@ -1,11 +1,11 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Defines unit tests for the Response class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Response
+ * @coversDefaultClass \TraderInteractive\Api\Response
  */
 final class ResponseTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,15 +1,15 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Defines unit tests for the PredisCache class
  *
- * @coversDefaultClass \DominionEnterprises\Api\PredisCache
+ * @coversDefaultClass \TraderInteractive\Api\PredisCache
  * @covers ::<private>
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
- * @uses \DominionEnterprises\Api\PredisCache::__construct
+ * @uses \TraderInteractive\Api\Request
+ * @uses \TraderInteractive\Api\Response
+ * @uses \TraderInteractive\Api\PredisCache::__construct
  */
 final class PredisCacheTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,7 +48,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::set
-     * @uses \DominionEnterprises\Api\PredisCache::get
+     * @uses \TraderInteractive\Api\PredisCache::get
      */
     public function setNoExpires()
     {
@@ -80,7 +80,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::get
-     * @uses \DominionEnterprises\Api\PredisCache::set
+     * @uses \TraderInteractive\Api\PredisCache::set
      */
     public function getNotFound()
     {
@@ -101,7 +101,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::get
-     * @uses \DominionEnterprises\Api\PredisCache::set
+     * @uses \TraderInteractive\Api\PredisCache::set
      */
     public function getExpired()
     {

@@ -1,22 +1,23 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
 
 /**
  * Unit tests for the Client class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Client
+ * @coversDefaultClass \TraderInteractive\Api\Client
  * @covers ::<private>
- * @uses \DominionEnterprises\Api\Client::__construct
- * @uses \DominionEnterprises\Api\Authentication::<private>
- * @uses \DominionEnterprises\Api\Authentication::__construct
- * @uses \DominionEnterprises\Api\Authentication::createClientCredentials
- * @uses \DominionEnterprises\Api\Authentication::parseTokenResponse
- * @uses \DominionEnterprises\Api\Authentication::getTokenRequest
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
+ * @uses \TraderInteractive\Api\Client::__construct
+ * @uses \TraderInteractive\Api\Authentication::<private>
+ * @uses \TraderInteractive\Api\Authentication::__construct
+ * @uses \TraderInteractive\Api\Authentication::createClientCredentials
+ * @uses \TraderInteractive\Api\Authentication::parseTokenResponse
+ * @uses \TraderInteractive\Api\Authentication::getTokenRequest
+ * @uses \TraderInteractive\Api\Request
+ * @uses \TraderInteractive\Api\Response
  */
 final class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -34,8 +35,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::getTokens
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function getTokens_withCall()
     {
@@ -49,8 +50,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      * @expectedException Exception
      * @expectedExceptionMessage Invalid Credentials
      */
@@ -66,8 +67,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function invalidTokenIsRefreshed()
     {
@@ -81,13 +82,13 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::setDefaultHeaders
-     * @uses \DominionEnterprises\Api\Client::setDefaultHeaders
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::setDefaultHeaders
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function defaultHeadersArePassed()
     {
-        $adapter = $this->getMockBuilder('\DominionEnterprises\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
         $adapter->expects($this->once())->method('start')->with(
             $this->callback(
                 function($request) {
@@ -109,8 +110,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401()
     {
@@ -124,8 +125,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedUsingRefreshTokenWith401()
     {
@@ -139,8 +140,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsNotRefreshedOnOtherFault()
     {
@@ -154,8 +155,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401OnApigee()
     {
@@ -169,8 +170,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401OnApigeeWithOtherMessage()
     {
@@ -184,8 +185,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::__construct
-     * @uses \DominionEnterprises\Api\Client::get
-     * @uses \DominionEnterprises\Api\Client::startGet
+     * @uses \TraderInteractive\Api\Client::get
+     * @uses \TraderInteractive\Api\Client::startGet
      * @expectedException \Exception
      */
     public function throwsWithHttpCodeNot200()
@@ -200,7 +201,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::index
      * @covers ::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function index()
     {
@@ -218,7 +219,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::get
      * @covers ::startGet
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function get()
     {
@@ -236,7 +237,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::get
      * @covers ::startGet
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function getWithParameters()
     {
@@ -254,7 +255,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::put
      * @covers ::startPut
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function put()
     {
@@ -272,7 +273,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::post
      * @covers ::startPost
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function post()
     {
@@ -290,7 +291,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::delete
      * @covers ::startDelete
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function delete()
     {
@@ -329,7 +330,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::delete
      * @covers ::startDelete
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function delete_withBody()
     {
@@ -362,8 +363,8 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::index
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function index_withMultiParameters()
     {
@@ -547,7 +548,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
         $cache->set($request, $unexpected);
         $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $adapter = $this->getMockBuilder('\DominionEnterprises\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
         $adapter->expects($this->once())->method('start');
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
@@ -582,7 +583,7 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::end
-     * @uses \DominionEnterprises\Api\Client::startGet
+     * @uses \TraderInteractive\Api\Client::startGet
      */
     public function setCache()
     {
@@ -599,9 +600,9 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::_start
-     * @uses \DominionEnterprises\Api\Client::index
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::index
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function validTokenInMemory()
     {

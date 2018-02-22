@@ -1,12 +1,12 @@
 <?php
 
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util\Http;
+namespace TraderInteractive\Api;
+use TraderInteractive\Util\Http;
 
 /**
  * Defines unit tests for the GuzzleAdapter class
  *
- * @coversDefaultClass \DominionEnterprises\Api\GuzzleAdapter
+ * @coversDefaultClass \TraderInteractive\Api\GuzzleAdapter
  * @covers ::<private>
  */
 final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
@@ -93,7 +93,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::end
-     * @uses \DominionEnterprises\Api\GuzzleAdapter::start
+     * @uses \TraderInteractive\Api\GuzzleAdapter::start
      */
     public function getHeaders()
     {

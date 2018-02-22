@@ -1,11 +1,11 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Unit tests for the Request class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Request
+ * @coversDefaultClass \TraderInteractive\Api\Request
  */
 final class RequestTest extends \PHPUnit_Framework_TestCase
 {

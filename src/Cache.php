@@ -1,6 +1,6 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Interface for caching API responses

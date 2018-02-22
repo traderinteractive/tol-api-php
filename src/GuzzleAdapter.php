@@ -1,6 +1,6 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 use ArrayObject;
 use DominionEnterprises\Util;

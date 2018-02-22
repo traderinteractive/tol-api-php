@@ -43,6 +43,6 @@
         "predis/predis": "~1.0"
     },
     "autoload": {
-        "psr-4": { "DominionEnterprises\\Api\\": "src" }
+        "psr-4": { "TraderInteractive\\Api\\": "src" }
     }
 }

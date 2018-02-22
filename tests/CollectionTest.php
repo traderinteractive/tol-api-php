@@ -1,22 +1,22 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Unit tests for the Collection class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Collection
+ * @coversDefaultClass \TraderInteractive\Api\Collection
  *
- * @uses \DominionEnterprises\Api\Collection::__construct
- * @uses \DominionEnterprises\Api\Collection::rewind
- * @uses \DominionEnterprises\Api\Client::__construct
- * @uses \DominionEnterprises\Api\Client::<private>
- * @uses \DominionEnterprises\Api\Authentication::__construct
- * @uses \DominionEnterprises\Api\Authentication::createClientCredentials
- * @uses \DominionEnterprises\Api\Authentication::parseTokenResponse
- * @uses \DominionEnterprises\Api\Authentication::getTokenRequest
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
+ * @uses \TraderInteractive\Api\Collection::__construct
+ * @uses \TraderInteractive\Api\Collection::rewind
+ * @uses \TraderInteractive\Api\Client::__construct
+ * @uses \TraderInteractive\Api\Client::<private>
+ * @uses \TraderInteractive\Api\Authentication::__construct
+ * @uses \TraderInteractive\Api\Authentication::createClientCredentials
+ * @uses \TraderInteractive\Api\Authentication::parseTokenResponse
+ * @uses \TraderInteractive\Api\Authentication::getTokenRequest
+ * @uses \TraderInteractive\Api\Request
+ * @uses \TraderInteractive\Api\Response
  */
 final class CollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -29,9 +29,9 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      * @covers ::current
      * @covers ::next
      * @covers ::count
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::index
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::index
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function directUsage()
     {
@@ -108,10 +108,10 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::count
-     * @uses \DominionEnterprises\Api\Collection::next
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::index
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Collection::next
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::index
+     * @uses \TraderInteractive\Api\Client::end
      *
      * THIS FUNCTION CANNOT BE NAMED COUNT OR PHPUNIT EXPLODES
      */
@@ -128,10 +128,10 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::key
-     * @uses \DominionEnterprises\Api\Collection::next
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::index
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Collection::next
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::index
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function key()
     {
@@ -146,10 +146,10 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::current
-     * @uses \DominionEnterprises\Api\Collection::next
-     * @uses \DominionEnterprises\Api\Client::startIndex
-     * @uses \DominionEnterprises\Api\Client::index
-     * @uses \DominionEnterprises\Api\Client::end
+     * @uses \TraderInteractive\Api\Collection::next
+     * @uses \TraderInteractive\Api\Client::startIndex
+     * @uses \TraderInteractive\Api\Client::index
+     * @uses \TraderInteractive\Api\Client::end
      */
     public function current()
     {

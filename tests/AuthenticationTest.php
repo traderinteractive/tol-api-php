@@ -1,14 +1,14 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Unit tests for the Collection class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Authentication
+ * @coversDefaultClass \TraderInteractive\Api\Authentication
  * @covers ::<private>
- * @uses \DominionEnterprises\Api\Request
- * @uses \DominionEnterprises\Api\Response
+ * @uses \TraderInteractive\Api\Request
+ * @uses \TraderInteractive\Api\Response
  */
 final class AuthenticationTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,7 +19,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
     public function createClientCredentials()
     {
         $auth = Authentication::createClientCredentials('not under test', 'not under test');
-        $this->assertInstanceOf('\DominionEnterprises\Api\Authentication', $auth);
+        $this->assertInstanceOf('\TraderInteractive\Api\Authentication', $auth);
     }
 
     /**
@@ -59,7 +59,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
     public function createOwnerCredentials()
     {
         $auth = Authentication::createOwnerCredentials('not under test', 'not under test', 'not under test', 'not under test');
-        $this->assertInstanceOf('\DominionEnterprises\Api\Authentication', $auth);
+        $this->assertInstanceOf('\TraderInteractive\Api\Authentication', $auth);
     }
 
     /**

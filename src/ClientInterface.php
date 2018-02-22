@@ -1,5 +1,5 @@
 <?php
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Client for apis
