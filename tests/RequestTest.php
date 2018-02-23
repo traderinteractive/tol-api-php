@@ -2,12 +2,14 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Unit tests for the Request class
  *
  * @coversDefaultClass \TraderInteractive\Api\Request
  */
-final class RequestTest extends \PHPUnit_Framework_TestCase
+final class RequestTest extends TestCase
 {
     /**
      * @test

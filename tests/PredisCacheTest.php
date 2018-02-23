@@ -2,16 +2,15 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Defines unit tests for the PredisCache class
  *
  * @coversDefaultClass \TraderInteractive\Api\PredisCache
  * @covers ::<private>
- * @uses \TraderInteractive\Api\Request
- * @uses \TraderInteractive\Api\Response
- * @uses \TraderInteractive\Api\PredisCache::__construct
  */
-final class PredisCacheTest extends \PHPUnit_Framework_TestCase
+final class PredisCacheTest extends TestCase
 {
     private $client;
 
@@ -52,7 +51,6 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::set
-     * @uses \TraderInteractive\Api\PredisCache::get
      */
     public function setNoExpires()
     {
@@ -92,7 +90,6 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::get
-     * @uses \TraderInteractive\Api\PredisCache::set
      */
     public function getNotFound()
     {
@@ -117,7 +114,6 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::get
-     * @uses \TraderInteractive\Api\PredisCache::set
      */
     public function getExpired()
     {

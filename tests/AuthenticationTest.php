@@ -2,15 +2,15 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Unit tests for the Collection class
  *
  * @coversDefaultClass \TraderInteractive\Api\Authentication
  * @covers ::<private>
- * @uses \TraderInteractive\Api\Request
- * @uses \TraderInteractive\Api\Response
  */
-final class AuthenticationTest extends \PHPUnit_Framework_TestCase
+final class AuthenticationTest extends TestCase
 {
     /**
      * @test

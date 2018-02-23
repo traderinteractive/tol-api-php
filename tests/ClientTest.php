@@ -4,22 +4,15 @@ namespace TraderInteractive\Api;
 
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for the Client class
  *
  * @coversDefaultClass \TraderInteractive\Api\Client
  * @covers ::<private>
- * @uses \TraderInteractive\Api\Client::__construct
- * @uses \TraderInteractive\Api\Authentication::<private>
- * @uses \TraderInteractive\Api\Authentication::__construct
- * @uses \TraderInteractive\Api\Authentication::createClientCredentials
- * @uses \TraderInteractive\Api\Authentication::parseTokenResponse
- * @uses \TraderInteractive\Api\Authentication::getTokenRequest
- * @uses \TraderInteractive\Api\Request
- * @uses \TraderInteractive\Api\Response
  */
-final class ClientTest extends \PHPUnit_Framework_TestCase
+final class ClientTest extends TestCase
 {
     /**
      * @test
@@ -35,8 +28,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::getTokens
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function getTokensWithCall()
     {
@@ -50,8 +41,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      * @expectedException Exception
      * @expectedExceptionMessage Invalid Credentials
      */
@@ -67,8 +56,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function invalidTokenIsRefreshed()
     {
@@ -82,9 +69,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::setDefaultHeaders
-     * @uses \TraderInteractive\Api\Client::setDefaultHeaders
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function defaultHeadersArePassed()
     {
@@ -110,8 +94,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401()
     {
@@ -125,8 +107,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedUsingRefreshTokenWith401()
     {
@@ -140,8 +120,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsNotRefreshedOnOtherFault()
     {
@@ -155,8 +133,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401OnApigee()
     {
@@ -170,8 +146,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function tokenIsRefreshedWith401OnApigeeWithOtherMessage()
     {
@@ -185,8 +159,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::__construct
-     * @uses \TraderInteractive\Api\Client::get
-     * @uses \TraderInteractive\Api\Client::startGet
      * @expectedException \Exception
      */
     public function throwsWithHttpCodeNot200()
@@ -201,7 +173,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::index
      * @covers ::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function index()
     {
@@ -219,7 +190,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::get
      * @covers ::startGet
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function get()
     {
@@ -237,7 +207,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::get
      * @covers ::startGet
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function getWithParameters()
     {
@@ -255,7 +224,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::put
      * @covers ::startPut
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function put()
     {
@@ -273,7 +241,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::post
      * @covers ::startPost
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function post()
     {
@@ -291,7 +258,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::delete
      * @covers ::startDelete
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function delete()
     {
@@ -330,7 +296,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::delete
      * @covers ::startDelete
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function deleteWithBody()
     {
@@ -363,8 +328,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * @test
      * @group unit
      * @covers ::index
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function indexWithMultiParameters()
     {
@@ -589,7 +552,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::end
-     * @uses \TraderInteractive\Api\Client::startGet
      */
     public function setCache()
     {
@@ -605,10 +567,6 @@ final class ClientTest extends \PHPUnit_Framework_TestCase
      * Verify client uses in memory token only if originially pulled from cache
      *
      * @test
-     * @covers ::_start
-     * @uses \TraderInteractive\Api\Client::index
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function validTokenInMemory()
     {

@@ -2,23 +2,14 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Unit tests for the Collection class
  *
  * @coversDefaultClass \TraderInteractive\Api\Collection
- *
- * @uses \TraderInteractive\Api\Collection::__construct
- * @uses \TraderInteractive\Api\Collection::rewind
- * @uses \TraderInteractive\Api\Client::__construct
- * @uses \TraderInteractive\Api\Client::<private>
- * @uses \TraderInteractive\Api\Authentication::__construct
- * @uses \TraderInteractive\Api\Authentication::createClientCredentials
- * @uses \TraderInteractive\Api\Authentication::parseTokenResponse
- * @uses \TraderInteractive\Api\Authentication::getTokenRequest
- * @uses \TraderInteractive\Api\Request
- * @uses \TraderInteractive\Api\Response
  */
-final class CollectionTest extends \PHPUnit_Framework_TestCase
+final class CollectionTest extends TestCase
 {
     /**
      * @test
@@ -29,9 +20,6 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      * @covers ::current
      * @covers ::next
      * @covers ::count
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::index
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function directUsage()
     {
@@ -108,10 +96,6 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::count
-     * @uses \TraderInteractive\Api\Collection::next
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::index
-     * @uses \TraderInteractive\Api\Client::end
      *
      * THIS FUNCTION CANNOT BE NAMED COUNT OR PHPUNIT EXPLODES
      */
@@ -128,10 +112,6 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::key
-     * @uses \TraderInteractive\Api\Collection::next
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::index
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function key()
     {
@@ -146,10 +126,6 @@ final class CollectionTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::current
-     * @uses \TraderInteractive\Api\Collection::next
-     * @uses \TraderInteractive\Api\Client::startIndex
-     * @uses \TraderInteractive\Api\Client::index
-     * @uses \TraderInteractive\Api\Client::end
      */
     public function current()
     {

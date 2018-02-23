@@ -2,6 +2,7 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
 use TraderInteractive\Util\Http;
 
 /**
@@ -10,7 +11,7 @@ use TraderInteractive\Util\Http;
  * @coversDefaultClass \TraderInteractive\Api\GuzzleAdapter
  * @covers ::<private>
  */
-final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
+final class GuzzleAdapterTest extends TestCase
 {
     /**
      * @test
@@ -94,7 +95,6 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::end
-     * @uses \TraderInteractive\Api\GuzzleAdapter::start
      */
     public function getHeaders()
     {

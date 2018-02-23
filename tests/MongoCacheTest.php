@@ -2,16 +2,15 @@
 
 namespace TraderInteractive\Api;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Defines unit tests for the MongoCache class
  *
  * @coversDefaultClass \TraderInteractive\Api\MongoCache
  * @covers ::<private>
- * @uses \TraderInteractive\Api\MongoCache::__construct
- * @uses \TraderInteractive\Api\Request
- * @uses \TraderInteractive\Api\Response
  */
-final class MongoCacheTest extends \PHPUnit_Framework_TestCase
+final class MongoCacheTest extends TestCase
 {
     const MONGO_DB = 'testing';
     const MONGO_COLLECTION = 'cache';
@@ -93,7 +92,6 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::set
-     * @uses \TraderInteractive\Api\MongoCache::get
      */
     public function setNoExpires()
     {
@@ -131,7 +129,6 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::get
-     * @uses \TraderInteractive\Api\MongoCache::set
      */
     public function getNotFound()
     {
@@ -159,8 +156,6 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @covers ::ensureIndexes
-     * @uses \TraderInteractive\Api\MongoCache::set
-     * @uses \TraderInteractive\Api\MongoCache::get
      */
     public function getExpired()
     {
