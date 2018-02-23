@@ -72,7 +72,7 @@ final class Collection implements \Iterator, \Countable
      * @param string $resource name of API resource to request
      * @param array $filters key value pair array of search filters
      */
-    public function __construct(Client $client, $resource, array $filters = [])
+    public function __construct(ClientInterface $client, $resource, array $filters = [])
     {
         Util::throwIfNotType(['string' => [$resource]], true);
 

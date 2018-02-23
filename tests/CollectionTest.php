@@ -11,6 +11,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class CollectionTest extends TestCase
 {
+    const DEFAULT_RESULT_SET = [
+        ['id' => '0', 'key' => 0],
+        ['id' => '1', 'key' => 1],
+        ['id' => '2', 'key' => 2],
+        ['id' => '3', 'key' => 3],
+        ['id' => '4', 'key' => 4],
+    ];
+
     /**
      * @test
      * @covers ::__construct
@@ -23,9 +31,7 @@ final class CollectionTest extends TestCase
      */
     public function directUsage()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $collection->rewind();
         $iterations = 0;
         while ($collection->valid()) {
@@ -46,9 +52,7 @@ final class CollectionTest extends TestCase
      */
     public function consecutiveRewind()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $collection->rewind();
         $collection->rewind();
         $iterations = 0;
@@ -68,9 +72,7 @@ final class CollectionTest extends TestCase
      */
     public function consecutiveCurrent()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
         $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
     }
@@ -83,9 +85,7 @@ final class CollectionTest extends TestCase
      */
     public function consecutiveNext()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $collection->next();
         $collection->next();
         $this->assertSame(['id' => '1', 'key' => 1], $collection->current());
@@ -101,9 +101,7 @@ final class CollectionTest extends TestCase
      */
     public function countOfResult()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(5, $collection->count());
     }
 
@@ -115,9 +113,7 @@ final class CollectionTest extends TestCase
      */
     public function key()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(0, $collection->key());
     }
 
@@ -129,9 +125,7 @@ final class CollectionTest extends TestCase
      */
     public function current()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(['id' => '0', 'key' => 0], $collection->current());
     }
 
@@ -143,9 +137,7 @@ final class CollectionTest extends TestCase
      */
     public function currentWithEmpty()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'empty');
+        $collection = new Collection($this->getClient([]), 'empty');
         $collection->current();
     }
 
@@ -157,9 +149,7 @@ final class CollectionTest extends TestCase
      */
     public function keyWithEmpty()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'empty');
+        $collection = new Collection($this->getClient([]), 'empty');
         $collection->key();
     }
 
@@ -168,9 +158,7 @@ final class CollectionTest extends TestCase
      */
     public function multiIteration()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
 
         $iterations = 0;
         foreach ($collection as $key => $actual) {
@@ -196,9 +184,7 @@ final class CollectionTest extends TestCase
      */
     public function emptyResult()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'empty');
+        $collection = new Collection($this->getClient([]), 'empty');
         $this->assertFalse($collection->valid());
         $this->assertSame(0, $collection->count());
     }
@@ -210,9 +196,7 @@ final class CollectionTest extends TestCase
      */
     public function oneItemCollection()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'single');
+        $collection = new Collection($this->getClient([['id' => '0', 'key' => 0]]), 'single');
         foreach ($collection as $item) {
             $this->assertSame(['id' => '0', 'key' => 0], $item);
         }
@@ -226,9 +210,7 @@ final class CollectionTest extends TestCase
      */
     public function column()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(
             [0, 1, 2, 3, 4],
             iterator_to_array($collection->column('key'))
@@ -245,9 +227,7 @@ final class CollectionTest extends TestCase
      */
     public function select()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CollectionAdapter(), $authentication, 'not under test');
-        $collection = new Collection($client, 'basic', ['limit' => 3]);
+        $collection = new Collection($this->getClient(), 'basic', ['limit' => 3]);
         $this->assertSame(
             [
                 ['key' => 0],
@@ -270,15 +250,14 @@ final class CollectionTest extends TestCase
      */
     public function selectMultipleKeys()
     {
-        $adapter = new CollectionAdapter();
-        $adapter->results = [
-            ['id' => 1, 'name' => 'Sam', 'score' => 99],
-            ['id' => 2, 'name' => 'Bob', 'score' => 83],
-            ['id' => 3, 'name' => 'Jon', 'score' => 75],
-            ['id' => 4, 'name' => 'Ted', 'score' => 64],
-        ];
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'not under test');
+        $client = $this->getClient(
+            [
+                ['id' => 1, 'name' => 'Sam', 'score' => 99],
+                ['id' => 2, 'name' => 'Bob', 'score' => 83],
+                ['id' => 3, 'name' => 'Jon', 'score' => 75],
+                ['id' => 4, 'name' => 'Ted', 'score' => 64],
+            ]
+        );
         $collection = new Collection($client, 'basic', ['limit' => 3]);
         $this->assertSame(
             [
@@ -301,15 +280,14 @@ final class CollectionTest extends TestCase
      */
     public function selectMissingKeys()
     {
-        $adapter = new CollectionAdapter();
-        $adapter->results = [
-            ['id' => 1, 'name' => 'Sam', 'score' => 99],
-            ['id' => 2, 'name' => 'Bob'],
-            ['id' => 3, 'name' => 'Jon', 'score' => 75],
-            ['id' => 4, 'score' => 64],
-        ];
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'not under test');
+        $client = $this->getClient(
+            [
+                ['id' => 1, 'name' => 'Sam', 'score' => 99],
+                ['id' => 2, 'name' => 'Bob'],
+                ['id' => 3, 'name' => 'Jon', 'score' => 75],
+                ['id' => 4, 'score' => 64],
+            ]
+        );
         $collection = new Collection($client, 'basic', ['limit' => 3]);
         $this->assertSame(
             [
@@ -320,5 +298,29 @@ final class CollectionTest extends TestCase
             ],
             iterator_to_array($collection->select(['name', 'score']))
         );
+    }
+
+    private function getClient(array $items = self::DEFAULT_RESULT_SET) : ClientInterface
+    {
+        $callback = function (string $resource, array $filters) use ($items) {
+            $offset = (int)($filters['offset'] ?? 0);
+            $limit = (int)($filters['limit'] ?? 2);
+
+            $result = [
+                'pagination' => [
+                    'offset' => $offset,
+                    'total' => count($items),
+                    'limit' => min($limit, count($items)),
+                ],
+                'result' => array_slice($items, $offset, $limit),
+            ];
+
+            return new Response(200, ['Content-Type' => ['application/json']], $result);
+        };
+
+        $mock = $this->getMockBuilder(ClientInterface::class)->getMock();
+        $mock->method('index')->will($this->returnCallback($callback));
+
+        return $mock;
     }
 }
