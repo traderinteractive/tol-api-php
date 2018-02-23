@@ -16,15 +16,19 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
     const MONGO_DB = 'testing';
     const MONGO_COLLECTION = 'cache';
 
-    private $_collection;
-    private $_mongoUrl;
+    private $collection;
+    private $mongoUrl;
 
     public function setUp()
     {
-        $this->_mongoUrl = getenv('TESTING_MONGO_URL') ?: 'mongodb://localhost:27017';
-        $mongo = new \MongoDB\Client($this->_mongoUrl, [], ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']]);
-        $this->_collection = $mongo->selectCollection(self::MONGO_DB, self::MONGO_COLLECTION);
-        $this->_collection->drop();
+        $this->mongoUrl = getenv('TESTING_MONGO_URL') ?: 'mongodb://localhost:27017';
+        $mongo = new \MongoDB\Client(
+            $this->mongoUrl,
+            [],
+            ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']]
+        );
+        $this->collection = $mongo->selectCollection(self::MONGO_DB, self::MONGO_COLLECTION);
+        $this->collection->drop();
     }
 
     /**
@@ -42,15 +46,15 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
             'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
         ];
 
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
         $request = new Request('a url', 'not under test');
         $response = new Response(200, $expected['headers'], $expected['body']);
 
         $cache->set($request, $response);
 
-        $this->assertSame(1, $this->_collection->count());
-        $actual = $this->_collection->findOne();
+        $this->assertSame(1, $this->collection->count());
+        $actual = $this->collection->findOne();
         $this->assertSame(strtotime($expires), $actual['expires']->toDateTime()->getTimestamp());
         unset($actual['expires']);
         $this->assertSame($expected, $actual);
@@ -60,7 +64,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::set
      */
-    public function set_withBody()
+    public function setWithBody()
     {
         $expires = 'Sun, 30 Jun 2013 13:53:50 GMT';
         $expected = [
@@ -70,15 +74,15 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
             'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
         ];
 
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
         $request = new Request('a url', 'not under test', ' with a body');
         $response = new Response(200, $expected['headers'], $expected['body']);
 
         $cache->set($request, $response);
 
-        $this->assertSame(1, $this->_collection->count());
-        $actual = $this->_collection->findOne();
+        $this->assertSame(1, $this->collection->count());
+        $actual = $this->collection->findOne();
         $this->assertSame(strtotime($expires), $actual['expires']->toDateTime()->getTimestamp());
         unset($actual['expires']);
         $this->assertSame($expected, $actual);
@@ -91,13 +95,13 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      * @covers ::set
      * @uses \TraderInteractive\Api\MongoCache::get
      */
-    public function set_noExpires()
+    public function setNoExpires()
     {
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
         $request = new Request('a url', 'not under test');
         $response = new Response(200, ['doesnt' => ['matter']]);
         $cache->set($request, $response);
-        $this->assertSame(0, $this->_collection->count());
+        $this->assertSame(0, $this->collection->count());
         $this->assertNull($cache->get($request));
     }
 
@@ -107,10 +111,15 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function get()
     {
-        $document = [ '_id' => 'a url|', 'httpCode' => 200, 'body' => ['doesnt' => 'matter'], 'headers' => ['key' => ['value']]];
-        $this->_collection->insertOne($document);
+        $document = [
+            '_id' => 'a url|',
+            'httpCode' => 200,
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['key' => ['value']],
+        ];
+        $this->collection->insertOne($document);
 
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
         $actual = $cache->get(new Request('a url', 'not under test'));
 
@@ -124,7 +133,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      * @covers ::get
      * @uses \TraderInteractive\Api\MongoCache::set
      */
-    public function get_notFound()
+    public function getNotFound()
     {
         $expected = [
             '_id' => 'a url|',
@@ -133,14 +142,14 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
             'headers' => ['Expires' => ['Sun, 30 Jun 2013 13:53:50 GMT'], 'Another' => ['Header']],
         ];
 
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
 
         $request = new Request('a url', 'not under test');
         $response = new Response(200, $expected['headers'], $expected['body']);
 
         $cache->set($request, $response);
 
-        $this->_collection->deleteOne(['_id' => $expected['_id']]);
+        $this->collection->deleteOne(['_id' => $expected['_id']]);
 
         $this->assertNull($cache->get($request));
     }
@@ -153,7 +162,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
      * @uses \TraderInteractive\Api\MongoCache::set
      * @uses \TraderInteractive\Api\MongoCache::get
      */
-    public function get_expired()
+    public function getExpired()
     {
         $expected = [
             '_id' => 'a url',
@@ -162,7 +171,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
             'headers' => ['Expires' => ['Sun, 30 Jun 2011 13:53:50 GMT'], 'Another' => ['Header']],
         ];
 
-        $cache = new MongoCache($this->_mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
+        $cache = new MongoCache($this->mongoUrl, self::MONGO_DB, self::MONGO_COLLECTION);
         $cache->ensureIndexes();
 
         $request = new Request('a url', 'not under test');
@@ -172,7 +181,7 @@ final class MongoCacheTest extends \PHPUnit_Framework_TestCase
 
         $endTime = time() + 121;
         while (time() <= $endTime) {
-            if ($this->_collection->count() === 0) {
+            if ($this->collection->count() === 0) {
                 break;
             }
 

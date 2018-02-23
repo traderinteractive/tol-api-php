@@ -61,7 +61,7 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
      * @dataProvider constructorBadData
      * @expectedException \InvalidArgumentException
      */
-    public function construct_withInvalidParameters($httpCode, $rawResponse, $rawHeaders)
+    public function constructWithInvalidParameters($httpCode, $rawResponse, $rawHeaders)
     {
         $response = new Response($httpCode, $rawResponse, $rawHeaders);
     }

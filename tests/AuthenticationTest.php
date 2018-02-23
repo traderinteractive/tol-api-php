@@ -27,7 +27,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @covers ::createClientCredentials
      * @covers ::getTokenRequest
      */
-    public function getTokenRequest_clientCredentials()
+    public function getTokenRequestClientCredentials()
     {
         $auth = Authentication::createClientCredentials('id', 'secret');
         $request = $auth->getTokenRequest('baseUrl', null);
@@ -42,13 +42,16 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @covers ::createClientCredentials
      * @covers ::getTokenRequest
      */
-    public function getTokenRequest_clientCredentialsWithRefreshToken()
+    public function getTokenRequestClientCredentialsWithRefreshToken()
     {
         $auth = Authentication::createClientCredentials('id', 'secret');
         $request = $auth->getTokenRequest('baseUrl', 'theRefreshToken');
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token', $request->getBody());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token',
+            $request->getBody()
+        );
         $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
@@ -58,7 +61,12 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      */
     public function createOwnerCredentials()
     {
-        $auth = Authentication::createOwnerCredentials('not under test', 'not under test', 'not under test', 'not under test');
+        $auth = Authentication::createOwnerCredentials(
+            'not under test',
+            'not under test',
+            'not under test',
+            'not under test'
+        );
         $this->assertInstanceOf('\TraderInteractive\Api\Authentication', $auth);
     }
 
@@ -67,13 +75,16 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @covers ::createOwnerCredentials
      * @covers ::getTokenRequest
      */
-    public function getTokenRequest_ownerCredentials()
+    public function getTokenRequestOwnerCredentials()
     {
         $auth = Authentication::createOwnerCredentials('id', 'secret', 'username', 'password');
         $request = $auth->getTokenRequest('baseUrl', null);
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&username=username&password=password&grant_type=password', $request->getBody());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&username=username&password=password&grant_type=password',
+            $request->getBody()
+        );
         $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
@@ -82,13 +93,16 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @covers ::createOwnerCredentials
      * @covers ::getTokenRequest
      */
-    public function getTokenRequest_ownerCredientialsWithRefreshToken()
+    public function getTokenRequestOwnerCredientialsWithRefreshToken()
     {
         $auth = Authentication::createOwnerCredentials('id', 'secret', 'notUnderTest', 'notUnderTest');
         $request = $auth->getTokenRequest('baseUrl', 'theRefreshToken');
         $this->assertSame('baseUrl/token', $request->getUrl());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token', $request->getBody());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token',
+            $request->getBody()
+        );
         $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
     }
 
@@ -96,9 +110,13 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::parseTokenResponse
      */
-    public function parseTokenResponse_noRefreshToken()
+    public function parseTokenResponseNoRefreshToken()
     {
-        $response = new Response(200, ['Content-Type' => ['application/json']], ['access_token' => 'theAccessToken', 'expires_in' => 1]);
+        $response = new Response(
+            200,
+            ['Content-Type' => ['application/json']],
+            ['access_token' => 'theAccessToken', 'expires_in' => 1]
+        );
 
         list($actualToken, $actualRefreshToken, $actualExpires) = Authentication::parseTokenResponse($response);
 
@@ -111,7 +129,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @test
      * @covers ::parseTokenResponse
      */
-    public function parseTokenResponse_withRefreshToken()
+    public function parseTokenResponseWithRefreshToken()
     {
         $response = new Response(
             200,
@@ -131,7 +149,7 @@ final class AuthenticationTest extends \PHPUnit_Framework_TestCase
      * @covers ::createClientCredentials
      * @covers ::getTokenRequest
      */
-    public function getTokenRequest_clientCredentialsCustomTokenResource()
+    public function getTokenRequestClientCredentialsCustomTokenResource()
     {
         $auth = Authentication::createClientCredentials('id', 'secret', 'token', 'custom');
         $request = $auth->getTokenRequest('baseUrl', null);

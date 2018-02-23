@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 
 /**
@@ -13,21 +14,21 @@ final class Response
      *
      * @var int
      */
-    private $_httpCode;
+    private $httpCode;
 
     /**
      * The response from the API
      *
      * @var array
      */
-    private $_body;
+    private $body;
 
     /**
      * A array of headers received with the response.
      *
      * @var array array where each header key has an array of values
      */
-    private $_headers;
+    private $headers;
 
     /**
      * Create a new instance of Response
@@ -46,9 +47,9 @@ final class Response
             throw new \InvalidArgumentException('$httpCode must be an integer >= 100 and <= 600');
         }
 
-        $this->_httpCode = $httpCode;
-        $this->_headers = $headers;
-        $this->_body = $body;
+        $this->httpCode = $httpCode;
+        $this->headers = $headers;
+        $this->body = $body;
     }
 
     /**
@@ -58,7 +59,7 @@ final class Response
      */
     public function getHttpCode()
     {
-        return $this->_httpCode;
+        return $this->httpCode;
     }
 
     /**
@@ -68,7 +69,7 @@ final class Response
      */
     public function getResponse()
     {
-        return $this->_body;
+        return $this->body;
     }
 
     /**
@@ -78,6 +79,6 @@ final class Response
      */
     public function getResponseHeaders()
     {
-        return $this->_headers;
+        return $this->headers;
     }
 }

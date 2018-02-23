@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 
@@ -14,7 +15,7 @@ final class PredisCache implements Cache
      *
      * @var \Predis\Client
      */
-    private $_client;
+    private $client;
 
     /**
      * Construct a cache instance.
@@ -23,7 +24,7 @@ final class PredisCache implements Cache
      */
     public function __construct(\Predis\Client $client)
     {
-        $this->_client = $client;
+        $this->client = $client;
     }
 
     /**
@@ -37,11 +38,15 @@ final class PredisCache implements Cache
                 return;
             }
 
-            $expires = Util::ensureNot(false, strtotime($expiresHeader[0]), "Unable to parse Expires value of '{$expiresHeader[0]}'");
+            $expires = Util::ensureNot(
+                false,
+                strtotime($expiresHeader[0]),
+                "Unable to parse Expires value of '{$expiresHeader[0]}'"
+            );
         }
 
-        $key = self::_getKey($request);
-        $this->_client->set(
+        $key = self::getKey($request);
+        $this->client->set(
             $key,
             json_encode(
                 [
@@ -51,7 +56,7 @@ final class PredisCache implements Cache
                 ]
             )
         );
-        $this->_client->expireat($key, $expires);
+        $this->client->expireat($key, $expires);
     }
 
     /**
@@ -59,7 +64,7 @@ final class PredisCache implements Cache
      */
     public function get(Request $request)
     {
-        $cached = $this->_client->get(self::_getKey($request));
+        $cached = $this->client->get(self::getKey($request));
         if ($cached !== null) {
             $data = json_decode($cached, true);
             return new Response($data['httpCode'], $data['headers'], $data['body']);
@@ -77,7 +82,7 @@ final class PredisCache implements Cache
      *
      * @return string the unique identifier
      */
-    private static function _getKey(Request $request)
+    private static function getKey(Request $request)
     {
         return "{$request->getUrl()}:{$request->getBody()}";
     }

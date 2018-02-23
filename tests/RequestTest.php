@@ -38,7 +38,7 @@ final class RequestTest extends \PHPUnit_Framework_TestCase
      * @dataProvider badData
      * @expectedException \InvalidArgumentException
      */
-    public function construct_withInvalidParameters($url, $method, $body, $headers)
+    public function constructWithInvalidParameters($url, $method, $body, $headers)
     {
         $request = new Request($url, $method, $body, $headers);
     }

@@ -1,5 +1,6 @@
 <?php
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
@@ -14,7 +15,7 @@ final class Authentication
      *
      * @var callable
      */
-    private $_getTokenRequestFunc;
+    private $getTokenRequestFunc;
 
     /**
      * Private constructor to safeguard undeclared functions
@@ -23,7 +24,7 @@ final class Authentication
      */
     private function __construct(callable $getTokenRequestFunc)
     {
-        $this->_getTokenRequestFunc = $getTokenRequestFunc;
+        $this->getTokenRequestFunc = $getTokenRequestFunc;
     }
 
     /**
@@ -36,13 +37,31 @@ final class Authentication
      *
      * @return \DominionEnterprises\Api\Authentication
      */
-    public static function createClientCredentials($clientId, $clientSecret, $refreshResource = 'token', $tokenResource = 'token')
-    {
+    public static function createClientCredentials(
+        $clientId,
+        $clientSecret,
+        $refreshResource = 'token',
+        $tokenResource = 'token'
+    ) {
         Util::throwIfNotType(['string' => [$clientId, $clientSecret]], true);
 
-        $getTokenRequestFunc = function($baseUrl, $refreshToken) use ($clientId, $clientSecret, $refreshResource, $tokenResource) {
+        $getTokenRequestFunc = function (
+            $baseUrl,
+            $refreshToken
+        ) use (
+            $clientId,
+            $clientSecret,
+            $refreshResource,
+            $tokenResource
+        ) {
             if ($refreshToken !== null) {
-                return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
+                return self::getRefreshTokenRequest(
+                    $baseUrl,
+                    $clientId,
+                    $clientSecret,
+                    $refreshResource,
+                    $refreshToken
+                );
             }
 
             $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
@@ -76,14 +95,28 @@ final class Authentication
         $password,
         $refreshResource = 'token',
         $tokenResource = 'token'
-    )
-    {
+    ) {
         Util::throwIfNotType(['string' => [$clientId, $clientSecret, $username, $password]], true);
 
-        $getTokenRequestFunc = function($baseUrl, $refreshToken)
-        use ($clientId, $clientSecret, $username, $password, $refreshResource, $tokenResource) {
+        $getTokenRequestFunc = function (
+            $baseUrl,
+            $refreshToken
+        ) use (
+            $clientId,
+            $clientSecret,
+            $username,
+            $password,
+            $refreshResource,
+            $tokenResource
+        ) {
             if ($refreshToken !== null) {
-                return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
+                return self::getRefreshTokenRequest(
+                    $baseUrl,
+                    $clientId,
+                    $clientSecret,
+                    $refreshResource,
+                    $refreshToken
+                );
             }
 
             $data = [
@@ -116,7 +149,11 @@ final class Authentication
         $parsedJson = $response->getResponse();
         Util::ensureNot('invalid_client', Arrays::get($parsedJson, 'error'), 'Invalid Credentials');
         Util::ensure(200, $response->getHttpCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
-        return [$parsedJson['access_token'], Arrays::get($parsedJson, 'refresh_token'), time() + (int)$parsedJson['expires_in']];
+        return [
+            $parsedJson['access_token'],
+            Arrays::get($parsedJson, 'refresh_token'),
+            time() + (int)$parsedJson['expires_in'],
+        ];
     }
 
     /**
@@ -132,7 +169,7 @@ final class Authentication
         Util::throwIfNotType(['string' => [$baseUrl]], true);
         Util::throwIfNotType(['string' => [$refreshToken]], true, true);
 
-        return call_user_func($this->_getTokenRequestFunc, $baseUrl, $refreshToken);
+        return call_user_func($this->getTokenRequestFunc, $baseUrl, $refreshToken);
     }
 
     /**
@@ -147,13 +184,23 @@ final class Authentication
      *
      * @return \DominionEnterprises\Api\Request The built token refresh request
      */
-    private static function _getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken)
-    {
+    private static function getRefreshTokenRequest(
+        $baseUrl,
+        $clientId,
+        $clientSecret,
+        $refreshResource,
+        $refreshToken
+    ) {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
-        $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'refresh_token' => $refreshToken, 'grant_type' => 'refresh_token'];
+        $data = [
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'refresh_token' => $refreshToken,
+            'grant_type' => 'refresh_token',
+        ];
 
-        //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible in Apigee and why the
-        //$refreshResource variable exists
+        //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible
+        //in Apigee and why the $refreshResource variable exists
         return new Request(
             "{$baseUrl}/{$refreshResource}",
             'POST',

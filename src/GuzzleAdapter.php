@@ -19,30 +19,30 @@ final class GuzzleAdapter implements Adapter
      *
      * @var array
      */
-    private $_promises = [];
+    private $promises = [];
 
     /**
      * Collection of Api\Response with keys matching what was given from start().
      *
      * @var array
      */
-    private $_responses = [];
+    private $responses = [];
 
     /**
      * Collection of \Exception with keys matching what was given from start().
      *
      * @var array
      */
-    private $_exceptions = [];
+    private $exceptions = [];
 
     /**
      * @var \Guzzle\Http\Client
      */
-    private $_client;
+    private $client;
 
     public function __construct()
     {
-        $this->_client = new GuzzleClient(
+        $this->client = new GuzzleClient(
             [
                 'allow_redirects' => false, //stop guzzle from following redirects
                 'http_errors' => false, //only for 400/500 error codes, actual exceptions can still happen
@@ -56,7 +56,7 @@ final class GuzzleAdapter implements Adapter
     public function start(Request $request)
     {
         $handle = uniqid();
-        $this->_promises[$handle] = $this->_client->requestAsync(
+        $this->promises[$handle] = $this->client->requestAsync(
             $request->getMethod(),
             $request->getUrl(),
             [
@@ -75,7 +75,7 @@ final class GuzzleAdapter implements Adapter
      */
     public function end($endHandle)
     {
-        $results = $this->fulfillPromises($this->_promises, $this->_exceptions);
+        $results = $this->fulfillPromises($this->promises, $this->exceptions);
         foreach ($results as $handle => $response) {
             try {
                 $body = []; //default to empty body
@@ -90,23 +90,23 @@ final class GuzzleAdapter implements Adapter
                     );
                 }
 
-                $this->_responses[$handle] = new Response($response->getStatusCode(), $response->getHeaders(), $body);
+                $this->responses[$handle] = new Response($response->getStatusCode(), $response->getHeaders(), $body);
             } catch (\Exception $e) {
-                $this->_exceptions[$handle] = $e;
+                $this->exceptions[$handle] = $e;
             }
         }
 
-        $this->_promises = [];
+        $this->promises = [];
 
-        if (array_key_exists($endHandle, $this->_exceptions)) {
-            $exception = $this->_exceptions[$endHandle];
-            unset($this->_exceptions[$endHandle]);
+        if (array_key_exists($endHandle, $this->exceptions)) {
+            $exception = $this->exceptions[$endHandle];
+            unset($this->exceptions[$endHandle]);
             throw $exception;
         }
 
-        if (array_key_exists($endHandle, $this->_responses)) {
-            $response = $this->_responses[$endHandle];
-            unset($this->_responses[$endHandle]);
+        if (array_key_exists($endHandle, $this->responses)) {
+            $response = $this->responses[$endHandle];
+            unset($this->responses[$endHandle]);
             return $response;
         }
 
@@ -129,7 +129,7 @@ final class GuzzleAdapter implements Adapter
 
         $results = [];
         Promise\each(
-            $this->_promises,
+            $this->promises,
             function (ResponseInterface $response, $index) use (&$results) {
                 $results[$index] = $response;
             },

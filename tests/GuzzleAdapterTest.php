@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use TraderInteractive\Util\Http;
 
 /**
@@ -99,7 +100,12 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     {
         $adapter = new GuzzleAdapter();
         $response = $adapter->end(
-            $adapter->start(new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET'))
+            $adapter->start(
+                new Request(
+                    'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json',
+                    'GET'
+                )
+            )
         );
 
         foreach ($response->getResponseHeaders() as $header) {

@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 
 /**
@@ -13,28 +14,28 @@ final class Request
      *
      * @var string
      */
-    private $_url;
+    private $url;
 
     /**
      * The HTTP method for this request
      *
      * @var string
      */
-    private $_method;
+    private $method;
 
     /**
      * The body for this request
      *
      * @var string
      */
-    private $_body;
+    private $body;
 
     /**
      * The HTTP headers for this request
      *
      * @var array
      */
-    private $_headers;
+    private $headers;
 
     /**
      * Create a new request instance
@@ -53,10 +54,10 @@ final class Request
         Util::throwIfNotType(['string' => [$url, $method]], true);
         Util::throwIfNotType(['string' => [$body]], true, true);
 
-        $this->_url = $url;
-        $this->_method = $method;
-        $this->_body = $body;
-        $this->_headers = $headers;
+        $this->url = $url;
+        $this->method = $method;
+        $this->body = $body;
+        $this->headers = $headers;
     }
 
     /**
@@ -66,7 +67,7 @@ final class Request
      */
     public function getUrl()
     {
-        return $this->_url;
+        return $this->url;
     }
 
     /**
@@ -76,7 +77,7 @@ final class Request
      */
     public function getMethod()
     {
-        return $this->_method;
+        return $this->method;
     }
 
     /**
@@ -86,7 +87,7 @@ final class Request
      */
     public function getBody()
     {
-        return $this->_body;
+        return $this->body;
     }
 
     /**
@@ -96,6 +97,6 @@ final class Request
      */
     public function getHeaders()
     {
-        return $this->_headers;
+        return $this->headers;
     }
 }

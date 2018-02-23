@@ -13,13 +13,13 @@ namespace TraderInteractive\Api;
  */
 final class PredisCacheTest extends \PHPUnit_Framework_TestCase
 {
-    private $_client;
+    private $client;
 
     public function setUp()
     {
         $redisUrl = getenv('TESTING_REDIS_URL') ?: null;
-        $this->_client = new \Predis\Client($redisUrl);
-        $this->_client->flushall();
+        $this->client = new \Predis\Client($redisUrl);
+        $this->client->flushall();
     }
 
     /**
@@ -30,16 +30,20 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
     public function setBasicUsage()
     {
         $expires = 'Sun, 30 Jun 2043 13:53:50 GMT';
-        $expected = ['httpCode' => 200, 'headers' => ['Expires' => [$expires], 'Another' => ['Header']], 'body' => ['doesnt' => 'matter']];
+        $expected = [
+            'httpCode' => 200,
+            'headers' => ['Expires' => [$expires], 'Another' => ['Header']],
+            'body' => ['doesnt' => 'matter'],
+        ];
 
-        $cache = new PredisCache($this->_client);
+        $cache = new PredisCache($this->client);
 
         $request = new Request('a url', 'not under test');
         $response = new Response(200, $expected['headers'], $expected['body']);
 
         $cache->set($request, $response);
 
-        $actual = json_decode($this->_client->get('a url:'), true);
+        $actual = json_decode($this->client->get('a url:'), true);
         $this->assertSame($expected, $actual);
     }
 
@@ -52,7 +56,7 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function setNoExpires()
     {
-        $cache = new PredisCache($this->_client);
+        $cache = new PredisCache($this->client);
         $request = new Request('a url', 'not under test');
         $response = new Response(200, ['doesnt' => ['matter']]);
         $cache->set($request, $response);
@@ -65,10 +69,18 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function getBasicUsage()
     {
-        $document = ['_id' => 'a url', 'httpCode' => 200, 'body' => ['doesnt' => 'matter'], 'headers' => ['key' => ['value']]];
-        $this->_client->set('a url:', json_encode(['httpCode' => 200, 'headers' => ['key' => ['value']], 'body' => ['doesnt' => 'matter']]));
+        $document = [
+            '_id' => 'a url',
+            'httpCode' => 200,
+            'body' => ['doesnt' => 'matter'],
+            'headers' => ['key' => ['value']],
+        ];
+        $this->client->set(
+            'a url:',
+            json_encode(['httpCode' => 200, 'headers' => ['key' => ['value']], 'body' => ['doesnt' => 'matter']])
+        );
 
-        $cache = new PredisCache($this->_client);
+        $cache = new PredisCache($this->client);
 
         $actual = $cache->get(new Request('a url', 'not under test'));
 
@@ -84,14 +96,18 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function getNotFound()
     {
-        $cache = new PredisCache($this->_client);
+        $cache = new PredisCache($this->client);
 
         $request = new Request('a url', 'not under test');
-        $response = new Response(200, ['Expires' => ['Sun, 30 Jun 2043 13:53:50 GMT'], 'Another' => ['Header']], ['doesnt' => 'matter']);
+        $response = new Response(
+            200,
+            ['Expires' => ['Sun, 30 Jun 2043 13:53:50 GMT'], 'Another' => ['Header']],
+            ['doesnt' => 'matter']
+        );
 
         $cache->set($request, $response);
 
-        $this->_client->del('a url:');
+        $this->client->del('a url:');
 
         $this->assertNull($cache->get($request));
     }
@@ -105,10 +121,14 @@ final class PredisCacheTest extends \PHPUnit_Framework_TestCase
      */
     public function getExpired()
     {
-        $cache = new PredisCache($this->_client);
+        $cache = new PredisCache($this->client);
 
         $request = new Request('a url', 'not under test');
-        $response = new Response(200, ['Expires' => ['Sun, 30 Jun 2011 13:53:50 GMT'], 'Another' => ['Header']], ['doesnt' => 'matter']);
+        $response = new Response(
+            200,
+            ['Expires' => ['Sun, 30 Jun 2011 13:53:50 GMT'], 'Another' => ['Header']],
+            ['doesnt' => 'matter']
+        );
 
         $cache->set($request, $response);
 

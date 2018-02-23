@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 
@@ -14,7 +15,7 @@ final class MongoCache implements Cache
      *
      * @var \MongoDB\Collection
      */
-    private $_collection;
+    private $collection;
 
     /**
      * Construct a new instance of MongoCache
@@ -25,10 +26,19 @@ final class MongoCache implements Cache
      */
     public function __construct($url, $db, $collection)
     {
-        Util::ensure(true, class_exists('\MongoDB\Client'), '\RuntimeException', ['mongo extension is required for ' . __CLASS__]);
+        Util::ensure(
+            true,
+            class_exists('\MongoDB\Client'),
+            '\RuntimeException',
+            ['mongo extension is required for ' . __CLASS__]
+        );
         Util::throwIfNotType(['string' => [$url, $db, $collection]], true);
-        $mongo = new \MongoDB\Client($url, [], ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']]);
-        $this->_collection = $mongo->selectCollection($db, $collection);
+        $mongo = new \MongoDB\Client(
+            $url,
+            [],
+            ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']]
+        );
+        $this->collection = $mongo->selectCollection($db, $collection);
     }
 
     /**
@@ -44,10 +54,14 @@ final class MongoCache implements Cache
                 return;
             }
 
-            $expires = Util::ensureNot(false, strtotime($expiresHeader[0]), "Unable to parse Expires value of '{$expiresHeader[0]}'");
+            $expires = Util::ensureNot(
+                false,
+                strtotime($expiresHeader[0]),
+                "Unable to parse Expires value of '{$expiresHeader[0]}'"
+            );
         }
 
-        $id = self::_getUniqueId($request);
+        $id = self::getUniqueId($request);
         $cache = [
             '_id' => $id,
             'httpCode' => $response->getHttpCode(),
@@ -55,7 +69,7 @@ final class MongoCache implements Cache
             'headers' => $response->getResponseHeaders(),
             'expires' => new \MongoDB\BSON\UTCDateTime(floor($expires * 1000)),
         ];
-        $this->_collection->replaceOne(['_id' => $id], $cache, ['upsert' => true]);
+        $this->collection->replaceOne(['_id' => $id], $cache, ['upsert' => true]);
     }
 
     /**
@@ -63,7 +77,7 @@ final class MongoCache implements Cache
      */
     public function get(Request $request)
     {
-        $cache = $this->_collection->findOne(['_id' => self::_getUniqueId($request)]);
+        $cache = $this->collection->findOne(['_id' => self::getUniqueId($request)]);
         if ($cache === null) {
             return null;
         }
@@ -78,7 +92,7 @@ final class MongoCache implements Cache
      */
     public function ensureIndexes()
     {
-        $this->_collection->createIndex(['expires' => 1], ['expireAfterSeconds' => 0, 'background' => true]);
+        $this->collection->createIndex(['expires' => 1], ['expireAfterSeconds' => 0, 'background' => true]);
     }
 
     /**
@@ -90,7 +104,7 @@ final class MongoCache implements Cache
      *
      * @return string the unique identifier
      */
-    private static function _getUniqueId(Request $request)
+    private static function getUniqueId(Request $request)
     {
         return $request->getUrl() . '|' . $request->getBody();
     }

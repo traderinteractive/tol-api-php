@@ -1,6 +1,7 @@
 <?php
 
 namespace TraderInteractive\Api;
+
 use DominionEnterprises\Util;
 
 /**
@@ -13,56 +14,56 @@ final class Collection implements \Iterator, \Countable
      *
      * @var Client
      */
-    private $_client;
+    private $client;
 
     /**
      * limit to give to API
      *
      * @var int
      */
-    private $_limit;
+    private $limit;
 
     /**
      * offset to give to API
      *
      * @var int
      */
-    private $_offset;
+    private $offset;
 
     /**
      * resource name for collection
      *
      * @var string
      */
-    private $_resource;
+    private $resource;
 
     /**
      * array of filters to pass to API
      *
      * @var array
      */
-    private $_filters;
+    private $filters;
 
     /**
      * Total number of elements in the collection
      *
      * @var int
      */
-    private $_total;
+    private $total;
 
     /**
      * pointer in the paginated results
      *
      * @var int
      */
-    private $_position;
+    private $position;
 
     /**
      * A paginated set of elements from the API
      *
      * @var array
      */
-    private $_result;
+    private $result;
 
     /**
      * Create a new collection
@@ -75,9 +76,9 @@ final class Collection implements \Iterator, \Countable
     {
         Util::throwIfNotType(['string' => [$resource]], true);
 
-        $this->_client = $client;
-        $this->_resource = $resource;
-        $this->_filters = $filters;
+        $this->client = $client;
+        $this->resource = $resource;
+        $this->filters = $filters;
         $this->rewind();
     }
 
@@ -88,11 +89,11 @@ final class Collection implements \Iterator, \Countable
      */
     public function count()
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        return $this->_total;
+        return $this->total;
     }
 
     /**
@@ -102,11 +103,11 @@ final class Collection implements \Iterator, \Countable
      */
     public function rewind()
     {
-        $this->_result = null;
-        $this->_offset = 0;
-        $this->_total = 0;
-        $this->_limit = 0;
-        $this->_position = -1;
+        $this->result = null;
+        $this->offset = 0;
+        $this->total = 0;
+        $this->limit = 0;
+        $this->position = -1;
     }
 
     /**
@@ -116,13 +117,13 @@ final class Collection implements \Iterator, \Countable
      */
     public function key()
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        Util::ensure(false, empty($this->_result), '\OutOfBoundsException', ['Collection contains no elements']);
+        Util::ensure(false, empty($this->result), '\OutOfBoundsException', ['Collection contains no elements']);
 
-        return $this->_offset + $this->_position;
+        return $this->offset + $this->position;
     }
 
     /**
@@ -132,11 +133,11 @@ final class Collection implements \Iterator, \Countable
      */
     public function valid()
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        return $this->_offset + $this->_position < $this->_total;
+        return $this->offset + $this->position < $this->total;
     }
 
     /**
@@ -146,24 +147,24 @@ final class Collection implements \Iterator, \Countable
      */
     public function next()
     {
-        ++$this->_position;
+        ++$this->position;
 
-        if ($this->_position < $this->_limit) {
+        if ($this->position < $this->limit) {
             return;
         }
 
-        $this->_offset += $this->_limit;
-        $this->_filters['offset'] = $this->_offset;
-        $indexResponse = $this->_client->index($this->_resource, $this->_filters);
+        $this->offset += $this->limit;
+        $this->filters['offset'] = $this->offset;
+        $indexResponse = $this->client->index($this->resource, $this->filters);
 
         $httpCode = $indexResponse->getHttpCode();
         Util::ensure(200, $httpCode, "Did not receive 200 from API. Instead received {$httpCode}");
 
         $response = $indexResponse->getResponse();
-        $this->_limit = $response['pagination']['limit'];
-        $this->_total = $response['pagination']['total'];
-        $this->_result = $response['result'];
-        $this->_position = 0;
+        $this->limit = $response['pagination']['limit'];
+        $this->total = $response['pagination']['total'];
+        $this->result = $response['result'];
+        $this->position = 0;
     }
 
     /**
@@ -173,18 +174,18 @@ final class Collection implements \Iterator, \Countable
      */
     public function current()
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
         Util::ensure(
             true,
-            array_key_exists($this->_position, $this->_result),
+            array_key_exists($this->position, $this->result),
             '\OutOfBoundsException',
             ['Collection contains no element at current position']
         );
 
-        return $this->_result[$this->_position];
+        return $this->result[$this->position];
     }
 
     /**
