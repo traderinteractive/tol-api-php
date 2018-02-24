@@ -2,6 +2,7 @@
 
 namespace TraderInteractive\Api;
 
+use ArrayObject;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
 use PHPUnit\Framework\TestCase;
@@ -20,8 +21,7 @@ final class ClientTest extends TestCase
      */
     public function getTokensNoCall()
     {
-        $auth = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new FakeAdapter(), $auth, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $this->assertSame([null, null], $client->getTokens());
     }
 
@@ -31,8 +31,7 @@ final class ClientTest extends TestCase
      */
     public function getTokensWithCall()
     {
-        $auth = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new AccessTokenAdapter(), $auth, 'a url');
+        $client = new Client(new AccessTokenAdapter(), $this->getAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
         $this->assertSame([1, null], $client->getTokens());
     }
@@ -47,8 +46,7 @@ final class ClientTest extends TestCase
     public function exceptionIsThrownOnBadCredentials()
     {
         $adapter = new AccessTokenInvalidClientAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $client->end($client->startIndex('a resource', []))->getHttpCode();
     }
 
@@ -60,8 +58,7 @@ final class ClientTest extends TestCase
     public function invalidTokenIsRefreshed()
     {
         $adapter = new InvalidAccessTokenAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -84,8 +81,7 @@ final class ClientTest extends TestCase
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
         );
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
         $client->setDefaultHeaders(['testHeader' => 'foo']);
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
@@ -98,8 +94,7 @@ final class ClientTest extends TestCase
     public function tokenIsRefreshedWith401()
     {
         $adapter = new AccessTokenAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -111,8 +106,7 @@ final class ClientTest extends TestCase
     public function tokenIsRefreshedUsingRefreshTokenWith401()
     {
         $adapter = new RefreshTokenAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -124,8 +118,7 @@ final class ClientTest extends TestCase
     public function tokenIsNotRefreshedOnOtherFault()
     {
         $adapter = new ApigeeOtherFaultAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $this->assertSame(401, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -137,8 +130,7 @@ final class ClientTest extends TestCase
     public function tokenIsRefreshedWith401OnApigee()
     {
         $adapter = new ApigeeRefreshTokenAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -150,8 +142,7 @@ final class ClientTest extends TestCase
     public function tokenIsRefreshedWith401OnApigeeWithOtherMessage()
     {
         $adapter = new ApigeeRefreshToken2Adapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -164,8 +155,7 @@ final class ClientTest extends TestCase
     public function throwsWithHttpCodeNot200()
     {
         $adapter = new ErrorResponseAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url');
         $client->get('notUnderTest', 'notUnderTest');
     }
 
@@ -176,8 +166,7 @@ final class ClientTest extends TestCase
      */
     public function index()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new IndexAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new IndexAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->index('resource name', ['the name' => 'the value']);
 
@@ -193,8 +182,7 @@ final class ClientTest extends TestCase
      */
     public function get()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new GetAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new GetAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->get('resource name', 'the id');
 
@@ -210,8 +198,7 @@ final class ClientTest extends TestCase
      */
     public function getWithParameters()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new GetWithParametersAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new GetWithParametersAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->get('resource name', 'the id', ['foo' => 'bar']);
 
@@ -227,8 +214,7 @@ final class ClientTest extends TestCase
      */
     public function put()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new PutAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new PutAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->put('resource name', 'the id', ['the key' => 'the value']);
 
@@ -244,8 +230,7 @@ final class ClientTest extends TestCase
      */
     public function post()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new PostAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new PostAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->post('resource name', ['the key' => 'the value']);
 
@@ -261,8 +246,7 @@ final class ClientTest extends TestCase
      */
     public function delete()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new DeleteAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new DeleteAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->delete('resource name', 'the id');
 
@@ -282,8 +266,7 @@ final class ClientTest extends TestCase
     public function deleteWithoutId()
     {
         $adapter = new DeleteAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'baseUrl/v1');
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl/v1');
         $client->startDelete('resource', null, ['foo' => 'bar']);
         $this->assertSame('baseUrl/v1/resource', $adapter->request->getUrl());
         $this->assertSame('DELETE', $adapter->request->getMethod());
@@ -299,8 +282,7 @@ final class ClientTest extends TestCase
      */
     public function deleteWithBody()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new DeleteAdapter(), $authentication, 'baseUrl/v1');
+        $client = new Client(new DeleteAdapter(), $this->getAuthentication(), 'baseUrl/v1');
 
         $response = $client->delete('resource name', 'the id', ['the key' => 'the value']);
 
@@ -318,9 +300,7 @@ final class ClientTest extends TestCase
      */
     public function getWithInvalidResource()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->get(null, '3');
     }
 
@@ -332,8 +312,7 @@ final class ClientTest extends TestCase
     public function indexWithMultiParameters()
     {
         $adapter = new CheckUrlAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'url');
+        $client = new Client($adapter, $this->getAuthentication(), 'url');
         $results = $client->index('resource', ['abc' => ['1$2(3', '4)5*6']]);
         $response = $results->getResponse();
         $this->assertSame('url/resource?abc=1%242%283&abc=4%295%2A6', $response['url']);
@@ -348,9 +327,7 @@ final class ClientTest extends TestCase
      */
     public function postWithInvalidResource()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->post(null, []);
     }
 
@@ -363,9 +340,7 @@ final class ClientTest extends TestCase
      */
     public function putWithInvalidResource()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->put(null, 'an id', []);
     }
 
@@ -378,9 +353,7 @@ final class ClientTest extends TestCase
      */
     public function putWithInvalidId()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->put('not under test', ' ', []);
     }
 
@@ -393,9 +366,7 @@ final class ClientTest extends TestCase
      */
     public function deleteWithInvalidResource()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->delete(null, 'an id');
     }
 
@@ -408,9 +379,7 @@ final class ClientTest extends TestCase
      */
     public function deleteWithInvalidId()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->delete('not under test', ' ');
     }
 
@@ -423,9 +392,7 @@ final class ClientTest extends TestCase
      */
     public function getWithInvalidId()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->get('not under test', " \n ");
     }
 
@@ -447,8 +414,8 @@ final class ClientTest extends TestCase
      */
     public function constructorBadData()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $adapter = $this->getAdapter();
+        $authentication = $this->getAuthentication();
         $cache = new ArrayCache();
 
         return [
@@ -473,9 +440,7 @@ final class ClientTest extends TestCase
      */
     public function indexWithInvalidResource()
     {
-        $adapter = new FakeAdapter();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client($adapter, $authentication, 'a url');
+        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
         $client->index('');
     }
 
@@ -491,8 +456,7 @@ final class ClientTest extends TestCase
         $request = new Request('baseUrl/a+url/id', 'not under test');
         $expected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $cache->set($request, $expected);
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new TokenAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client(new TokenAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
     }
@@ -510,17 +474,16 @@ final class ClientTest extends TestCase
         $unexpected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
         $cache->set($request, $unexpected);
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
         $adapter->expects($this->once())->method('start');
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
         );
-        $client = new Client($adapter, $authentication, 'baseUrl', Client::CACHE_MODE_REFRESH, $cache, 'foo');
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_REFRESH, $cache, 'foo');
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
         $this->assertEquals($expected, $cache->get($request));
-        $client = new Client(new TokenAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client(new TokenAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
     }
@@ -533,10 +496,9 @@ final class ClientTest extends TestCase
      */
     public function getTokenNotInCache()
     {
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
         $client = new Client(
             new GetAdapter(),
-            $authentication,
+            $this->getAuthentication(),
             'baseUrl/v1',
             Client::CACHE_MODE_TOKEN,
             new ArrayCache()
@@ -556,8 +518,7 @@ final class ClientTest extends TestCase
     public function setCache()
     {
         $cache = new ArrayCache();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
-        $client = new Client(new CacheAdapter(), $authentication, 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client(new CacheAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
         $actual = $cache->cache['baseUrl/a+url/id'];
         $this->assertEquals($expected, $actual);
@@ -571,7 +532,7 @@ final class ClientTest extends TestCase
     public function validTokenInMemory()
     {
         $cache = new ArrayCache();
-        $authentication = Authentication::createClientCredentials('not under test', 'not under test');
+        $authentication = $this->getAuthentication();
         $request = $authentication->getTokenRequest('baseUrl', 'token', null);
         $cache->set(
             $request,
@@ -588,5 +549,42 @@ final class ClientTest extends TestCase
         $cache->cache = [];
         // no token requests should be made with second  request
         $this->assertSame(['a body'], $client->index('foos')->getResponse());
+    }
+
+    private function getAdapter() : Adapter
+    {
+        $container = new ArrayObject();
+        $startCallback = function (Request $request) use ($container) {
+            $container['request'] = $request;
+        };
+
+        $endCallback = function (string $handle) use ($container) {
+            if (substr_count($this->request->getUrl(), 'token') == 1) {
+                $container['token'] = md5(microtime(true));
+                return new Response(
+                    200,
+                    ['Content-Type' => ['application/json']],
+                    ['access_token' => $container['token'], 'expires_in' => 1]
+                );
+            }
+        };
+
+        $handle = uniqid();
+        $mock = $this->getMockBuilder(Adapter::class)->getMock();
+        $mock->method('start')->willReturn($handle);
+        $mock->method('end')->willReturn(
+            new Response(
+                200,
+                ['Content-Type' => ['application/json']],
+                ['access_token' => 'foo', 'expires_in' => 1]
+            )
+        );
+
+        return $mock;
+    }
+
+    private function getAuthentication() : Authentication
+    {
+        return Authentication::createClientCredentials('not under test', 'not under test');
     }
 }
