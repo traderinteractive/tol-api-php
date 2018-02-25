@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
+use Chadicus\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
 use PHPUnit\Framework\TestCase;
@@ -416,7 +417,7 @@ final class ClientTest extends TestCase
     {
         $adapter = $this->getAdapter();
         $authentication = $this->getAuthentication();
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
 
         return [
             // host checks
@@ -426,8 +427,6 @@ final class ClientTest extends TestCase
             '$baseUrl is not a string' => [$adapter, $authentication, 123, Client::CACHE_MODE_ALL, $cache],
             // cacheMode checks
             '$cacheMode is not valid constant' => [$adapter, $authentication, 'baseUrl', 42, $cache],
-            // cache checks
-            '$cache is null with mode ALL' => [$adapter, $authentication, 'baseUrl', Client::CACHE_MODE_ALL, null],
         ];
     }
 
@@ -452,10 +451,10 @@ final class ClientTest extends TestCase
      */
     public function getFromCache()
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $request = new Request('baseUrl/a+url/id', 'not under test');
         $expected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
-        $cache->set($request, $expected);
+        $cache->set($this->getCacheKey($request), $expected);
         $client = new Client(new TokenAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
@@ -469,11 +468,11 @@ final class ClientTest extends TestCase
      */
     public function getDisabledCache()
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $request = new Request('baseUrl/a+url/id', 'not under test');
         $unexpected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
-        $cache->set($request, $unexpected);
+        $cache->set($this->getCacheKey($request), $unexpected);
         $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
         $adapter->expects($this->once())->method('start');
         $adapter->expects($this->once())->method('end')->will(
@@ -489,7 +488,7 @@ final class ClientTest extends TestCase
         );
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
-        $this->assertEquals($expected, $cache->get($request));
+        $this->assertEquals($expected, $cache->get($this->getCacheKey($request)));
         $client = new Client(new TokenAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
@@ -508,7 +507,7 @@ final class ClientTest extends TestCase
             $this->getAuthentication(),
             'baseUrl/v1',
             Client::CACHE_MODE_TOKEN,
-            new ArrayCache()
+            new InMemoryCache()
         );
 
         $response = $client->end($client->startGet('resource name', 'the id'));
@@ -524,10 +523,10 @@ final class ClientTest extends TestCase
      */
     public function setCache()
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $client = new Client(new CacheAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
-        $actual = $cache->cache['baseUrl/a+url/id'];
+        $actual = $cache->get('baseUrl#a+url#id|');
         $this->assertEquals($expected, $actual);
     }
 
@@ -538,11 +537,12 @@ final class ClientTest extends TestCase
      */
     public function validTokenInMemory()
     {
-        $cache = new ArrayCache();
+        $cache = new InMemoryCache();
         $authentication = $this->getAuthentication();
-        $request = $authentication->getTokenRequest('baseUrl', 'token', null);
+        $request = $authentication->getTokenRequest('baseUrl', null);
+        $key = $this->getCacheKey($request);
         $cache->set(
-            $request,
+            $key,
             new Response(
                 200,
                 ['Content-Type' => ['application/json']],
@@ -553,7 +553,7 @@ final class ClientTest extends TestCase
         // no token requests should be made
         $this->assertSame(['a body'], $client->index('foos')->getResponse());
         // empty the cache
-        $cache->cache = [];
+        $cache->clear();
         // no token requests should be made with second  request
         $this->assertSame(['a body'], $client->index('foos')->getResponse());
     }
@@ -593,5 +593,12 @@ final class ClientTest extends TestCase
     private function getAuthentication() : Authentication
     {
         return Authentication::createClientCredentials('not under test', 'not under test');
+    }
+
+    private function getCacheKey(Request $request) : string
+    {
+        $key = "{$request->getUrl()}|{$request->getBody()}";
+        $reserved = ['{', '}', '(', ')', '/', '\\', '@', ':'];
+        return str_replace($reserved, '#', $key);
     }
 }

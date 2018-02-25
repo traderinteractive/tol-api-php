@@ -12,7 +12,7 @@ final class NoTokenAdapter implements Adapter
 
     public function end($handle)
     {
-        if (substr($this->request->getUrl(), -5) === 'foos?') {
+        if (substr_count($this->request->getUrl(), 'foos')) {
             return new Response(200, ['Content-Type' => ['application/json']], ['a body']);
         }
 

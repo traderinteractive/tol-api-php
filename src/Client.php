@@ -2,9 +2,11 @@
 
 namespace TraderInteractive\Api;
 
+use Chadicus\Psr\SimpleCache\NullCache;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * Client for apis
@@ -45,6 +47,17 @@ final class Client implements ClientInterface
      * @const int
      */
     const CACHE_MODE_REFRESH = 4;
+
+    /**
+     * @var array
+     */
+    const CACHE_MODES = [
+        self::CACHE_MODE_NONE,
+        self::CACHE_MODE_GET,
+        self::CACHE_MODE_TOKEN,
+        self::CACHE_MODE_ALL,
+        self::CACHE_MODE_REFRESH,
+    ];
 
     /**
      * Base url of the API server
@@ -128,7 +141,7 @@ final class Client implements ClientInterface
         Authentication $authentication,
         $baseUrl,
         $cacheMode = self::CACHE_MODE_NONE,
-        Cache $cache = null,
+        CacheInterface $cache = null,
         $accessToken = null,
         $refreshToken = null
     ) {
@@ -136,34 +149,15 @@ final class Client implements ClientInterface
         Util::throwIfNotType(['string' => [$accessToken, $refreshToken]], true, true);
         Util::ensure(
             true,
-            in_array(
-                $cacheMode,
-                [
-                    self::CACHE_MODE_NONE,
-                    self::CACHE_MODE_GET,
-                    self::CACHE_MODE_TOKEN,
-                    self::CACHE_MODE_ALL,
-                    self::CACHE_MODE_REFRESH,
-                ],
-                true
-            ),
+            in_array($cacheMode, self::CACHE_MODES, true),
             '\InvalidArgumentException',
             ['$cacheMode must be a valid cache mode constant']
         );
 
-        if ($cacheMode !== self::CACHE_MODE_NONE) {
-            Util::ensureNot(
-                null,
-                $cache,
-                '\InvalidArgumentException',
-                ['$cache must not be null if $cacheMode is not CACHE_MODE_NONE']
-            );
-        }
-
         $this->adapter = $adapter;
         $this->baseUrl = $baseUrl;
         $this->authentication = $authentication;
-        $this->cache = $cache;
+        $this->cache = $cache ?? new NullCache();
         $this->cacheMode = $cacheMode;
         $this->accessToken = $accessToken;
         $this->refreshToken = $refreshToken;
@@ -343,7 +337,7 @@ final class Client implements ClientInterface
         if (($this->cacheMode === self::CACHE_MODE_REFRESH
                 || $this->cacheMode & self::CACHE_MODE_GET)
                 && $request->getMethod() === 'GET') {
-            $this->cache->set($request, $response);
+            $this->cache->set($this->getCacheKey($request), $response);
         }
 
         return $response;
@@ -402,7 +396,8 @@ final class Client implements ClientInterface
         list($this->accessToken, $this->refreshToken, $expires) = Authentication::parseTokenResponse($response);
 
         if ($this->cache === self::CACHE_MODE_REFRESH || $this->cacheMode & self::CACHE_MODE_TOKEN) {
-            $this->cache->set($request, $response, $expires);
+            $this->cache->set($this->getCacheKey($request), $response, $expires);
+            return;
         }
     }
 
@@ -418,7 +413,7 @@ final class Client implements ClientInterface
         }
 
         $cachedResponse = $this->cache->get(
-            $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken)
+            $this->getCacheKey($this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken))
         );
         if ($cachedResponse === null) {
             return;
@@ -455,7 +450,7 @@ final class Client implements ClientInterface
         $request = new Request($url, $method, $body, $headers);
 
         if ($request->getMethod() === 'GET' && $this->cacheMode & self::CACHE_MODE_GET) {
-            $cached = $this->cache->get($request);
+            $cached = $this->cache->get($this->getCacheKey($request));
             if ($cached !== null) {
                 //The response is cache. Generate a key for the handles array
                 $key = uniqid();
@@ -467,5 +462,12 @@ final class Client implements ClientInterface
         $key = $this->adapter->start($request);
         $this->handles[$key] = [null, $key, $request];
         return $key;
+    }
+
+    private function getCacheKey(Request $request) : string
+    {
+        $key = "{$request->getUrl()}|{$request->getBody()}";
+        $reserved = ['{', '}', '(', ')', '/', '\\', '@', ':'];
+        return str_replace($reserved, '#', $key);
     }
 }
