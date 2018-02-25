@@ -526,7 +526,7 @@ final class ClientTest extends TestCase
         $cache = new InMemoryCache();
         $client = new Client(new CacheAdapter(), $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
-        $actual = $cache->get('baseUrl#a+url#id|');
+        $actual = $cache->get('baseUrl_FSLASH_a+url_FSLASH_id|');
         $this->assertEquals($expected, $actual);
     }
 
@@ -540,9 +540,8 @@ final class ClientTest extends TestCase
         $cache = new InMemoryCache();
         $authentication = $this->getAuthentication();
         $request = $authentication->getTokenRequest('baseUrl', null);
-        $key = $this->getCacheKey($request);
         $cache->set(
-            $key,
+            $this->getCacheKey($request),
             new Response(
                 200,
                 ['Content-Type' => ['application/json']],
@@ -597,8 +596,6 @@ final class ClientTest extends TestCase
 
     private function getCacheKey(Request $request) : string
     {
-        $key = "{$request->getUrl()}|{$request->getBody()}";
-        $reserved = ['{', '}', '(', ')', '/', '\\', '@', ':'];
-        return str_replace($reserved, '#', $key);
+        return CacheHelper::getCacheKey($request);
     }
 }

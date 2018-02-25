@@ -466,8 +466,6 @@ final class Client implements ClientInterface
 
     private function getCacheKey(Request $request) : string
     {
-        $key = "{$request->getUrl()}|{$request->getBody()}";
-        $reserved = ['{', '}', '(', ')', '/', '\\', '@', ':'];
-        return str_replace($reserved, '#', $key);
+        return CacheHelper::getCacheKey($request);
     }
 }
