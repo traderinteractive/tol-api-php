@@ -49,7 +49,7 @@ final class Request
      * @throws \InvalidArgumentException Thrown if $method is not a non-empty string
      * @throws \InvalidArgumentException Thrown if $body is not null or not a non-empty string
      */
-    public function __construct($url, $method, $body = null, array $headers = [])
+    public function __construct(string $url, string $method, string $body = null, array $headers = [])
     {
         Util::throwIfNotType(['string' => [$url, $method]], true);
         Util::throwIfNotType(['string' => [$body]], true, true);
@@ -65,7 +65,7 @@ final class Request
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl() : string
     {
         return $this->url;
     }
@@ -75,7 +75,7 @@ final class Request
      *
      * @return string
      */
-    public function getMethod()
+    public function getMethod() : string
     {
         return $this->method;
     }
@@ -95,7 +95,7 @@ final class Request
      *
      * @return array
      */
-    public function getHeaders()
+    public function getHeaders() : array
     {
         return $this->headers;
     }

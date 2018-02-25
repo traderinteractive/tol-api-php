@@ -39,9 +39,9 @@ final class Response
      *
      * @throws \InvalidArgumentException Throw if $httpCode is not an integer between 100 and 600
      */
-    public function __construct($httpCode, array $headers, array $body = [])
+    public function __construct(int $httpCode, array $headers, array $body = [])
     {
-        Util::throwIfNotType(['int' => $httpCode, 'array' => $headers]);
+        Util::throwIfNotType(['array' => $headers]);
 
         if ($httpCode < 100 || $httpCode > 600) {
             throw new \InvalidArgumentException('$httpCode must be an integer >= 100 and <= 600');
@@ -57,7 +57,7 @@ final class Response
      *
      * @return int
      */
-    public function getHttpCode()
+    public function getHttpCode() : int
     {
         return $this->httpCode;
     }
@@ -67,7 +67,7 @@ final class Response
      *
      * @return array
      */
-    public function getResponse()
+    public function getResponse() : array
     {
         return $this->body;
     }
@@ -77,7 +77,7 @@ final class Response
      *
      * @return array array where each header key has an array of values
      */
-    public function getResponseHeaders()
+    public function getResponseHeaders() : array
     {
         return $this->headers;
     }

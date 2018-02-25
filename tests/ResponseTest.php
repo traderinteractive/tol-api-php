@@ -78,7 +78,6 @@ final class ResponseTest extends TestCase
         $body = ['doesnt' => 'matter'];
         return [
             // http code checks
-            ['NaN', ['doesnt' => ['matter']], $body],  // not a number
             [99, ['doesnt' => ['matter']], $body],  // less than 100
             [601, ['doesnt' => ['matter']], $body],  // greater than 600
             [200, ['doesnt' => 'NOT AN ARRAY'], $body],  // header value not an array

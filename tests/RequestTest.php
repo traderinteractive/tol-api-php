@@ -54,19 +54,14 @@ final class RequestTest extends TestCase
     {
         return [
             // url checks
-            [null, 'method', null, []], // null
             [" \n ", 'method', null, []], // white space
             ['', 'method', null, []], // empty string
-            [1, 'method', null, []], // not a string
             // method checks
-            ['url', null, null, []], // null
             ['url', " \n ", null, []], // white space
             ['url', '', null, []], // empty string
-            ['url', 1, null, []], // not a string
             // body checks
             ['url', 'method', " \n ", []], // white space
             ['url', 'method', '', []], // empty string
-            ['url', 'method', 1, []], // not a string
         ];
     }
 }
