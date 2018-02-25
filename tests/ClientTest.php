@@ -479,7 +479,14 @@ final class ClientTest extends TestCase
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
         );
-        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_REFRESH, $cache, 'foo');
+        $client = new Client(
+            $adapter,
+            $this->getAuthentication(),
+            'baseUrl',
+            Client::CACHE_MODE_REFRESH,
+            $cache,
+            'foo'
+        );
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertEquals($expected, $actual);
         $this->assertEquals($expected, $cache->get($request));
