@@ -139,14 +139,12 @@ final class Client implements ClientInterface
     public function __construct(
         Adapter $adapter,
         Authentication $authentication,
-        $baseUrl,
-        $cacheMode = self::CACHE_MODE_NONE,
+        string $baseUrl,
+        int $cacheMode = self::CACHE_MODE_NONE,
         CacheInterface $cache = null,
-        $accessToken = null,
-        $refreshToken = null
+        string $accessToken = null,
+        string $refreshToken = null
     ) {
-        Util::throwIfNotType(['string' => [$baseUrl]], true);
-        Util::throwIfNotType(['string' => [$accessToken, $refreshToken]], true, true);
         Util::ensure(
             true,
             in_array($cacheMode, self::CACHE_MODES, true),
@@ -168,7 +166,7 @@ final class Client implements ClientInterface
      *
      * @return array two string values, access token and refresh token
      */
-    public function getTokens()
+    public function getTokens() : array
     {
         return [$this->accessToken, $this->refreshToken];
     }
@@ -179,11 +177,10 @@ final class Client implements ClientInterface
      * @param string $resource
      * @param array $filters
      *
-     * @return mixed opaque handle to be given to endIndex()
+     * @return string opaque handle to be given to endIndex()
      */
-    public function startIndex($resource, array $filters = [])
+    public function startIndex(string $resource, array $filters = []) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->baseUrl}/" . urlencode($resource) . '?' . Http::buildQueryString($filters);
         return $this->start($url, 'GET');
     }
@@ -191,7 +188,7 @@ final class Client implements ClientInterface
     /**
      * @see startIndex()
      */
-    public function index($resource, array $filters = [])
+    public function index(string $resource, array $filters = []) : Response
     {
         return $this->end($this->startIndex($resource, $filters));
     }
@@ -203,11 +200,10 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array  $parameters
      *
-     * @return mixed opaque handle to be given to endGet()
+     * @return string opaque handle to be given to endGet()
      */
-    public function startGet($resource, $id, array $parameters = [])
+    public function startGet(string $resource, string $id, array $parameters = []) : string
     {
-        Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
         if (!empty($parameters)) {
             $url .= '?' . Http::buildQueryString($parameters);
@@ -219,7 +215,7 @@ final class Client implements ClientInterface
     /**
      * @see startGet()
      */
-    public function get($resource, $id, array $parameters = [])
+    public function get(string $resource, string $id, array $parameters = []) : Response
     {
         return $this->end($this->startGet($resource, $id, $parameters));
     }
@@ -230,11 +226,10 @@ final class Client implements ClientInterface
      * @param string $resource
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPost()
+     * @return string opaque handle to be given to endPost()
      */
-    public function startPost($resource, array $data)
+    public function startPost(string $resource, array $data) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->baseUrl}/" . urlencode($resource);
         return $this->start($url, 'POST', json_encode($data), ['Content-Type' => 'application/json']);
     }
@@ -242,7 +237,7 @@ final class Client implements ClientInterface
     /**
      * @see startPost()
      */
-    public function post($resource, array $data)
+    public function post(string $resource, array $data) : Response
     {
         return $this->end($this->startPost($resource, $data));
     }
@@ -254,11 +249,10 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPut()
+     * @return string opaque handle to be given to endPut()
      */
-    public function startPut($resource, $id, array $data)
+    public function startPut(string $resource, string $id, array $data) : string
     {
-        Util::throwIfNotType(['string' => [$resource, $id]], true);
         $url = "{$this->baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
         return $this->start($url, 'PUT', json_encode($data), ['Content-Type' => 'application/json']);
     }
@@ -266,7 +260,7 @@ final class Client implements ClientInterface
     /**
      * @see startPut()
      */
-    public function put($resource, $id, array $data)
+    public function put(string $resource, string $id, array $data) : Response
     {
         return $this->end($this->startPut($resource, $id, $data));
     }
@@ -278,14 +272,12 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endDelete()
+     * @return string opaque handle to be given to endDelete()
      */
-    public function startDelete($resource, $id = null, array $data = null)
+    public function startDelete(string $resource, string $id = null, array $data = null) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
         $url = "{$this->baseUrl}/" . urlencode($resource);
         if ($id !== null) {
-            Util::throwIfNotType(['string' => [$id]], true);
             $url .= '/' . urlencode($id);
         }
 
@@ -296,7 +288,7 @@ final class Client implements ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete($resource, $id = null, array $data = null)
+    public function delete(string $resource, string $id = null, array $data = null) : Response
     {
         return $this->end($this->startDelete($resource, $id, $data));
     }
@@ -304,11 +296,11 @@ final class Client implements ClientInterface
     /**
      * Get response of start*() method
      *
-     * @param mixed $handle opaque handle from start*()
+     * @param string $handle opaque handle from start*()
      *
      * @return Response
      */
-    public function end($handle)
+    public function end(string $handle) : Response
     {
         Util::ensure(
             true,
@@ -350,12 +342,12 @@ final class Client implements ClientInterface
      *
      * @return void
      */
-    public function setDefaultHeaders($defaultHeaders)
+    public function setDefaultHeaders(array $defaultHeaders)
     {
         $this->defaultHeaders = $defaultHeaders;
     }
 
-    private static function isExpiredToken(Response $response)
+    private static function isExpiredToken(Response $response) : bool
     {
         if ($response->getHttpCode() !== 401) {
             return false;
@@ -431,9 +423,9 @@ final class Client implements ClientInterface
      * @param array $headers Authorization key will be overwritten with the bearer token, and Accept-Encoding wil be
      *                       overwritten with gzip.
      *
-     * @return mixed opaque handle to be given to end()
+     * @return string opaque handle to be given to end()
      */
-    private function start($url, $method, $body = null, array $headers = [])
+    private function start(string $url, string $method, string $body = null, array $headers = [])
     {
         $headers += $this->defaultHeaders;
         $headers['Accept-Encoding'] = 'gzip';

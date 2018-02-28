@@ -10,6 +10,7 @@ final class ApigeeRefreshTokenAdapter implements Adapter
     public function start(Request $request)
     {
         $this->request = $request;
+        return uniqid();
     }
 
     public function end($handle)

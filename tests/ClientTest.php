@@ -71,11 +71,11 @@ final class ClientTest extends TestCase
     public function defaultHeadersArePassed()
     {
         $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
-        $adapter->expects($this->once())->method('start')->with(
-            $this->callback(
+        $adapter->expects($this->once())->method('start')->will(
+            $this->returnCallback(
                 function ($request) {
                     $this->assertEquals('foo', $request->getHeaders()['testHeader']);
-                    return true;
+                    return uniqid();
                 }
             )
         );
@@ -295,19 +295,6 @@ final class ClientTest extends TestCase
     /**
      * @test
      * @group unit
-     * @expectedException \InvalidArgumentException
-     * @covers ::get
-     * @covers ::startGet
-     */
-    public function getWithInvalidResource()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->get(null, '3');
-    }
-
-    /**
-     * @test
-     * @group unit
      * @covers ::index
      */
     public function indexWithMultiParameters()
@@ -317,84 +304,6 @@ final class ClientTest extends TestCase
         $results = $client->index('resource', ['abc' => ['1$2(3', '4)5*6']]);
         $response = $results->getResponse();
         $this->assertSame('url/resource?abc=1%242%283&abc=4%295%2A6', $response['url']);
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::post
-     * @covers ::startPost
-     * @expectedException \InvalidArgumentException
-     */
-    public function postWithInvalidResource()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->post(null, []);
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::put
-     * @covers ::startPut
-     * @expectedException \InvalidArgumentException
-     */
-    public function putWithInvalidResource()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->put(null, 'an id', []);
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::put
-     * @covers ::startPut
-     * @expectedException \InvalidArgumentException
-     */
-    public function putWithInvalidId()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->put('not under test', ' ', []);
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::delete
-     * @covers ::startDelete
-     * @expectedException \InvalidArgumentException
-     */
-    public function deleteWithInvalidResource()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->delete(null, 'an id');
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::delete
-     * @covers ::startDelete
-     * @expectedException \InvalidArgumentException
-     */
-    public function deleteWithInvalidId()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->delete('not under test', ' ');
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::get
-     * @covers ::startGet
-     * @expectedException \InvalidArgumentException
-     */
-    public function getWithInvalidId()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->get('not under test', " \n ");
     }
 
     /**
@@ -420,27 +329,8 @@ final class ClientTest extends TestCase
         $cache = new InMemoryCache();
 
         return [
-            // host checks
-            '$baseUrl is null' => [$adapter, $authentication, null, Client::CACHE_MODE_ALL, $cache],
-            '$baseUrl is empty string' => [$adapter, $authentication, '', Client::CACHE_MODE_ALL, $cache],
-            '$baseUrl is whitespace' => [$adapter, $authentication, " \n ", Client::CACHE_MODE_ALL, $cache],
-            '$baseUrl is not a string' => [$adapter, $authentication, 123, Client::CACHE_MODE_ALL, $cache],
-            // cacheMode checks
             '$cacheMode is not valid constant' => [$adapter, $authentication, 'baseUrl', 42, $cache],
         ];
-    }
-
-    /**
-     * @test
-     * @group unit
-     * @covers ::index
-     * @covers ::startIndex
-     * @expectedException \InvalidArgumentException
-     */
-    public function indexWithInvalidResource()
-    {
-        $client = new Client($this->getAdapter(), $this->getAuthentication(), 'a url');
-        $client->index('');
     }
 
     /**
@@ -474,7 +364,7 @@ final class ClientTest extends TestCase
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
         $cache->set($this->getCacheKey($request), $unexpected);
         $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
-        $adapter->expects($this->once())->method('start');
+        $adapter->expects($this->once())->method('start')->willReturn(uniqid());
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
         );

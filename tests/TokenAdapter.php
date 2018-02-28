@@ -6,6 +6,7 @@ final class TokenAdapter implements Adapter
 {
     public function start(Request $request)
     {
+        return uniqid();
     }
 
     public function end($handle)
