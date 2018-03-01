@@ -5,6 +5,7 @@ namespace TraderInteractive\Api;
 use ArrayObject;
 use DominionEnterprises\Util;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise;
 use Psr\Http\Message\ResponseInterface;
@@ -36,11 +37,11 @@ final class GuzzleAdapter implements AdapterInterface
     private $exceptions;
 
     /**
-     * @var \Guzzle\Http\Client
+     * @var GuzzleClientInterface
      */
     private $client;
 
-    public function __construct(GuzzleClient $client = null)
+    public function __construct(GuzzleClientInterface $client = null)
     {
         $this->exceptions = new ArrayObject();
         $this->client = $client ?? new GuzzleClient(
