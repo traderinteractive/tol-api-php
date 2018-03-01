@@ -12,7 +12,7 @@ final class Collection implements \Iterator, \Countable
     /**
      * API Client
      *
-     * @var Client
+     * @var ClientInterface
      */
     private $client;
 
