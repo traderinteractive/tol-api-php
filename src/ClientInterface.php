@@ -1,6 +1,8 @@
 <?php
 namespace TraderInteractive\Api;
 
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * Client for apis
  */
@@ -26,7 +28,7 @@ interface ClientInterface
     /**
      * @see startIndex()
      */
-    public function index(string $resource, array $filters = []) : Response;
+    public function index(string $resource, array $filters = []) : ResponseInterface;
 
     /**
      * Get the details of an API resource based on $id
@@ -42,7 +44,7 @@ interface ClientInterface
     /**
      * @see startGet()
      */
-    public function get(string $resource, string $id, array $parameters = []) : Response;
+    public function get(string $resource, string $id, array $parameters = []) : ResponseInterface;
 
     /**
      * Create a new instance of an API resource using the provided $data
@@ -57,7 +59,7 @@ interface ClientInterface
     /**
      * @see startPost()
      */
-    public function post(string $resource, array $data) : Response;
+    public function post(string $resource, array $data) : ResponseInterface;
 
     /**
      * Update an existing instance of an API resource specified by $id with the provided $data
@@ -73,7 +75,7 @@ interface ClientInterface
     /**
      * @see startPut()
      */
-    public function put(string $resource, string $id, array $data) : Response;
+    public function put(string $resource, string $id, array $data) : ResponseInterface;
 
     /**
      * Delete an existing instance of an API resource specified by $id
@@ -89,16 +91,16 @@ interface ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete(string $resource, string $id = null, array $data = null) : Response;
+    public function delete(string $resource, string $id = null, array $data = null) : ResponseInterface;
 
     /**
      * Get response of start*() method
      *
      * @param string $handle opaque handle from start*()
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function end(string $handle) : Response;
+    public function end(string $handle) : ResponseInterface;
 
     /**
      * Set the default headers

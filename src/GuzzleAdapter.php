@@ -75,7 +75,7 @@ final class GuzzleAdapter implements AdapterInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function end(string $endHandle) : Response
+    public function end(string $endHandle) : ResponseInterface
     {
         $results = $this->fulfillPromises($this->promises, $this->exceptions);
         foreach ($results as $handle => $response) {
@@ -92,7 +92,7 @@ final class GuzzleAdapter implements AdapterInterface
                     );
                 }
 
-                $this->responses[$handle] = new Response($response->getStatusCode(), $response->getHeaders(), $body);
+                $this->responses[$handle] = $response;
             } catch (\Exception $e) {
                 $this->exceptions[$handle] = $e;
             }

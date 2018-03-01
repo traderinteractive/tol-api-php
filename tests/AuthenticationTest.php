@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use PHPUnit\Framework\TestCase;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Unit tests for the Collection class
@@ -115,7 +116,7 @@ final class AuthenticationTest extends TestCase
         $response = new Response(
             200,
             ['Content-Type' => ['application/json']],
-            ['access_token' => 'theAccessToken', 'expires_in' => 1]
+            json_encode(['access_token' => 'theAccessToken', 'expires_in' => 1])
         );
 
         list($actualToken, $actualRefreshToken, $actualExpires) = Authentication::parseTokenResponse($response);
@@ -134,7 +135,7 @@ final class AuthenticationTest extends TestCase
         $response = new Response(
             200,
             ['Content-Type' => ['application/json']],
-            ['access_token' => 'theAccessToken', 'expires_in' => 1, 'refresh_token' => 'theRefreshToken']
+            json_encode(['access_token' => 'theAccessToken', 'expires_in' => 1, 'refresh_token' => 'theRefreshToken'])
         );
 
         list($actualToken, $actualRefreshToken, $actualExpires) = Authentication::parseTokenResponse($response);

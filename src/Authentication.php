@@ -4,6 +4,7 @@ namespace TraderInteractive\Api;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Layer for OAuth2 Authentication
@@ -140,15 +141,15 @@ final class Authentication
     /**
      * Extracts an access token from the given API response
      *
-     * @param \DominionEnterprises\Api\Response $response The API response containing the access token
+     * @param ResponseInterface $response The API response containing the access token
      *
      * @return array Array containing the access token, refresh token and expires timestamp
      */
-    public static function parseTokenResponse(Response $response)
+    public static function parseTokenResponse(ResponseInterface $response)
     {
-        $parsedJson = $response->getResponse();
+        $parsedJson = json_decode((string)$response->getBody(), true);
         Util::ensureNot('invalid_client', Arrays::get($parsedJson, 'error'), 'Invalid Credentials');
-        Util::ensure(200, $response->getHttpCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
+        Util::ensure(200, $response->getStatusCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
         return [
             $parsedJson['access_token'],
             Arrays::get($parsedJson, 'refresh_token'),
@@ -190,7 +191,7 @@ final class Authentication
         $clientSecret,
         $refreshResource,
         $refreshToken
-    ) {
+    ) : Request {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
         $data = [
             'client_id' => $clientId,

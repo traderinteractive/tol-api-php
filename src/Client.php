@@ -6,6 +6,7 @@ use Chadicus\Psr\SimpleCache\NullCache;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -188,7 +189,7 @@ final class Client implements ClientInterface
     /**
      * @see startIndex()
      */
-    public function index(string $resource, array $filters = []) : Response
+    public function index(string $resource, array $filters = []) : ResponseInterface
     {
         return $this->end($this->startIndex($resource, $filters));
     }
@@ -215,7 +216,7 @@ final class Client implements ClientInterface
     /**
      * @see startGet()
      */
-    public function get(string $resource, string $id, array $parameters = []) : Response
+    public function get(string $resource, string $id, array $parameters = []) : ResponseInterface
     {
         return $this->end($this->startGet($resource, $id, $parameters));
     }
@@ -237,7 +238,7 @@ final class Client implements ClientInterface
     /**
      * @see startPost()
      */
-    public function post(string $resource, array $data) : Response
+    public function post(string $resource, array $data) : ResponseInterface
     {
         return $this->end($this->startPost($resource, $data));
     }
@@ -260,7 +261,7 @@ final class Client implements ClientInterface
     /**
      * @see startPut()
      */
-    public function put(string $resource, string $id, array $data) : Response
+    public function put(string $resource, string $id, array $data) : ResponseInterface
     {
         return $this->end($this->startPut($resource, $id, $data));
     }
@@ -288,7 +289,7 @@ final class Client implements ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete(string $resource, string $id = null, array $data = null) : Response
+    public function delete(string $resource, string $id = null, array $data = null) : ResponseInterface
     {
         return $this->end($this->startDelete($resource, $id, $data));
     }
@@ -298,9 +299,9 @@ final class Client implements ClientInterface
      *
      * @param string $handle opaque handle from start*()
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function end(string $handle) : Response
+    public function end(string $handle) : ResponseInterface
     {
         Util::ensure(
             true,
@@ -347,13 +348,13 @@ final class Client implements ClientInterface
         $this->defaultHeaders = $defaultHeaders;
     }
 
-    private static function isExpiredToken(Response $response) : bool
+    private static function isExpiredToken(ResponseInterface $response) : bool
     {
-        if ($response->getHttpCode() !== 401) {
+        if ($response->getStatusCode() !== 401) {
             return false;
         }
 
-        $parsedJson = $response->getResponse();
+        $parsedJson = json_decode((string)$response->getBody(), true);
         $error = Arrays::get($parsedJson, 'error');
 
         if (is_array($error)) {

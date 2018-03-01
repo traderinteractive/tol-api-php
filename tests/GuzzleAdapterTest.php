@@ -52,7 +52,7 @@ final class GuzzleAdapterTest extends TestCase
         }
 
         $responseTwo = $adapter->end($handleTwo);
-        $this->assertSame(200, $responseTwo->getHttpCode());
+        $this->assertSame(200, $responseTwo->getStatusCode());
     }
 
     /**
@@ -77,7 +77,7 @@ final class GuzzleAdapterTest extends TestCase
         }
 
         $responseTwo = $adapter->end($handleTwo);
-        $this->assertSame(200, $responseTwo->getHttpCode());
+        $this->assertSame(200, $responseTwo->getStatusCode());
     }
 
     /**
@@ -108,7 +108,7 @@ final class GuzzleAdapterTest extends TestCase
             )
         );
 
-        foreach ($response->getResponseHeaders() as $header) {
+        foreach ($response->getHeaders() as $header) {
             $this->assertInternalType('array', $header);
         }
     }

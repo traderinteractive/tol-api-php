@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use DominionEnterprises\Util\Arrays;
+use Psr\Http\Message\ResponseInterface;
 
 final class FakeAdapter implements AdapterInterface
 {
@@ -28,7 +29,7 @@ final class FakeAdapter implements AdapterInterface
         return $handle;
     }
 
-    public function end(string $handle) : Response
+    public function end(string $handle) : ResponseInterface
     {
         $request = Arrays::where($this->requests, ['handle' => $handle])[0]['request'];
 

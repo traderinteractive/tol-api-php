@@ -2,6 +2,8 @@
 
 namespace TraderInteractive\Api;
 
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * interface for api requests
  */
@@ -21,7 +23,7 @@ interface AdapterInterface
      *
      * @param mixed $handle opaque handle from start()
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function end(string $handle) : Response;
+    public function end(string $handle) : ResponseInterface;
 }
