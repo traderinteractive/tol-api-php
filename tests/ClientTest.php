@@ -6,8 +6,10 @@ use ArrayObject;
 use Chadicus\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * Unit tests for the Client class
@@ -24,7 +26,7 @@ final class ClientTest extends TestCase
     public function getTokensNoCall()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(
                     200,
                     ['Content-Type' => ['application/json']],
@@ -44,8 +46,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -56,7 +58,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer 1') {
+                if ($headers['Authorization'] === ['Bearer 1']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
 
@@ -79,8 +81,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_client']));
                 }
             }
@@ -99,8 +101,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -111,7 +113,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer foo') {
+                if ($headers['Authorization'] === ['Bearer foo']) {
                     return new Response(
                         401,
                         ['Content-Type' => ['application/json']],
@@ -120,7 +122,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer 0') {
+                if ($headers['Authorization'] === ['Bearer 0']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
 
@@ -141,8 +143,8 @@ final class ClientTest extends TestCase
     {
         $test = $this;
         $adapter = new FakeAdapter(
-            function (Request $request) use ($test) {
-                $test->assertEquals('foo', $request->getHeaders()['testHeader']);
+            function (RequestInterface $request) use ($test) {
+                $test->assertEquals(['foo'], $request->getHeaders()['testHeader']);
                 return new Response(200, ['Content-Type' => ['application/json']]);
             }
         );
@@ -160,8 +162,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -172,7 +174,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer 1') {
+                if ($headers['Authorization'] === ['Bearer 1']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
 
@@ -192,8 +194,8 @@ final class ClientTest extends TestCase
     public function tokenIsRefreshedUsingRefreshTokenWith401()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr_count($request->getUrl(), 'token') === 1
+            function (RequestInterface $request) {
+                if (substr_count($request->getUri(), 'token') === 1
                         && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
                     return new Response(
                         200,
@@ -202,7 +204,7 @@ final class ClientTest extends TestCase
                     );
                 }
 
-                if (substr_count($request->getUrl(), 'token') === 1
+                if (substr_count($request->getUri(), 'token') === 1
                         && substr_count($request->getBody(), 'refresh_token=boo') === 1) {
                     return new Response(
                         200,
@@ -212,7 +214,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer goodToken') {
+                if ($headers['Authorization'] === ['Bearer goodToken']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
 
@@ -233,8 +235,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -264,8 +266,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -276,7 +278,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer 1') {
+                if ($headers['Authorization'] === ['Bearer 1']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
                 return new Response(
@@ -299,8 +301,8 @@ final class ClientTest extends TestCase
     {
         $tokenCount = 0;
         $adapter = new FakeAdapter(
-            function (Request $request) use (&$tokenCount) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     $response = new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -311,7 +313,7 @@ final class ClientTest extends TestCase
                 }
 
                 $headers = $request->getHeaders();
-                if ($headers['Authorization'] === 'Bearer 1') {
+                if ($headers['Authorization'] === ['Bearer 1']) {
                     return new Response(200, ['Content-Type' => ['application/json']]);
                 }
 
@@ -335,7 +337,7 @@ final class ClientTest extends TestCase
     public function throwsWithHttpCodeNot200()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(400, ['Content-Type' => ['application/json']], json_encode(['error_description' => 'an error']));
             }
         );
@@ -351,8 +353,8 @@ final class ClientTest extends TestCase
     public function index()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -361,7 +363,7 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'GET'
-                        && urldecode($request->getUrl()) === 'baseUrl/v1/resource name?the name=the value') {
+                        && urldecode($request->getUri()) === 'baseUrl/v1/resource name?the name=the value') {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
                 }
             }
@@ -384,8 +386,8 @@ final class ClientTest extends TestCase
     public function get()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -393,7 +395,7 @@ final class ClientTest extends TestCase
                     );
                 }
 
-                if ($request->getMethod() === 'GET' && $request->getUrl() === 'baseUrl/v1/resource+name/the+id') {
+                if ($request->getMethod() === 'GET' && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
                 }
             }
@@ -415,8 +417,8 @@ final class ClientTest extends TestCase
     public function getWithParameters()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -425,7 +427,7 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'GET'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name/the+id?foo=bar') {
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id?foo=bar') {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
                 }
             }
@@ -447,8 +449,8 @@ final class ClientTest extends TestCase
     public function put()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -457,12 +459,12 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'PUT'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name/the+id'
-                        && $request->getBody() === '{"the key":"the value"}'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id'
+                        && (string)$request->getBody() === '{"the key":"the value"}'
                         && $request->getHeaders() === [
-                            'Content-Type' => 'application/json',
-                            'Accept-Encoding' => 'gzip',
-                            'Authorization' => 'Bearer a token',
+                            'Content-Type' => ['application/json'],
+                            'Accept-Encoding' => ['gzip'],
+                            'Authorization' => ['Bearer a token'],
                         ]
                 ) {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
@@ -487,8 +489,8 @@ final class ClientTest extends TestCase
     public function post()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -497,12 +499,12 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'POST'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name'
-                        && $request->getBody() === '{"the key":"the value"}'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name'
+                        && (string)$request->getBody() === '{"the key":"the value"}'
                         && $request->getHeaders() === [
-                            'Content-Type' => 'application/json',
-                            'Accept-Encoding' => 'gzip',
-                            'Authorization' => 'Bearer a token',
+                            'Content-Type' => ['application/json'],
+                            'Accept-Encoding' => ['gzip'],
+                            'Authorization' => ['Bearer a token'],
                         ]
                 ) {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
@@ -526,8 +528,8 @@ final class ClientTest extends TestCase
     public function delete()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -536,16 +538,16 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'DELETE'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name/the+id'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id'
                         && $request->getHeaders() === [
-                            'Content-Type' => 'application/json',
-                            'Accept-Encoding' => 'gzip',
-                            'Authorization' => 'Bearer a token',
+                            'Content-Type' => ['application/json'],
+                            'Accept-Encoding' => ['gzip'],
+                            'Authorization' => ['Bearer a token'],
                         ]
                 ) {
-                    $body = $request->getBody();
+                    $body = (string)$request->getBody();
 
-                    if ($body === null || $body === '{"the key":"the value"}') {
+                    if ($body === '' || $body === '{"the key":"the value"}') {
                         return new Response(204, ['Content-Type' => ['application/json']], json_encode([]));
                     }
                 }
@@ -571,8 +573,8 @@ final class ClientTest extends TestCase
     public function deleteWithoutId()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -581,7 +583,7 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'DELETE'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name/the+id'
+                        && $request->getUri() === 'baseUrl/v1/resource+name/the+id'
                         && $request->getHeaders() === [
                             'Content-Type' => 'application/json',
                             'Accept-Encoding' => 'gzip',
@@ -598,9 +600,9 @@ final class ClientTest extends TestCase
         );
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl/v1');
         $client->startDelete('resource', null, ['foo' => 'bar']);
-        $this->assertSame('baseUrl/v1/resource', $adapter->getLastRequest()->getUrl());
+        $this->assertSame('baseUrl/v1/resource', (string)$adapter->getLastRequest()->getUri());
         $this->assertSame('DELETE', $adapter->getLastRequest()->getMethod());
-        $this->assertSame(json_encode(['foo' => 'bar']), $adapter->getLastRequest()->getBody());
+        $this->assertSame(json_encode(['foo' => 'bar']), (string)$adapter->getLastRequest()->getBody());
     }
 
     /**
@@ -613,8 +615,8 @@ final class ClientTest extends TestCase
     public function deleteWithBody()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -623,16 +625,16 @@ final class ClientTest extends TestCase
                 }
 
                 if ($request->getMethod() === 'DELETE'
-                        && $request->getUrl() === 'baseUrl/v1/resource+name/the+id'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id'
                         && $request->getHeaders() === [
-                            'Content-Type' => 'application/json',
-                            'Accept-Encoding' => 'gzip',
-                            'Authorization' => 'Bearer a token',
+                            'Content-Type' => ['application/json'],
+                            'Accept-Encoding' => ['gzip'],
+                            'Authorization' => ['Bearer a token'],
                         ]
                 ) {
-                    $body = $request->getBody();
+                    $body = (string)$request->getBody();
 
-                    if ($body === null || $body === '{"the key":"the value"}') {
+                    if ($body === '' || $body === '{"the key":"the value"}') {
                         return new Response(204, ['Content-Type' => ['application/json']], json_encode([]));
                     }
                 }
@@ -655,11 +657,11 @@ final class ClientTest extends TestCase
     public function indexWithMultiParameters()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(
                     200,
                     ['Content-Type' => ['application/json']],
-                    json_encode(['access_token' => 'foo', 'url' => $request->getUrl(), 'expires_in' => 1])
+                    json_encode(['access_token' => 'foo', 'url' => (string)$request->getUri(), 'expires_in' => 1])
                 );
             }
         );
@@ -688,7 +690,7 @@ final class ClientTest extends TestCase
     public function constructorBadData()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(
                     200,
                     ['Content-Type' => ['application/json']],
@@ -713,7 +715,7 @@ final class ClientTest extends TestCase
     public function getFromCache()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(
                     200,
                     ['Content-Type' => ['application/json']],
@@ -722,12 +724,14 @@ final class ClientTest extends TestCase
             }
         );
         $cache = new InMemoryCache();
-        $request = new Request('baseUrl/a+url/id', 'not under test');
+        $request = new Request('GET', 'baseUrl/a+url/id', []);
         $expected = new Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
         $cache->set($this->getCacheKey($request), $expected);
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
-        $actual = $client->end($client->startGet('a url', 'id'));
-        $this->assertEquals($expected, $actual);
+        $actual = $client->get('a url', 'id');
+        $this->assertSame($expected->getStatusCode(), $actual->getStatusCode());
+        $this->assertSame((string)$expected->getBody(), (string)$actual->getBody());
+        $this->assertSame($expected->getHeaders(), $actual->getHeaders());
     }
 
     /**
@@ -739,12 +743,12 @@ final class ClientTest extends TestCase
     public function getDisabledCache()
     {
         $cache = new InMemoryCache();
-        $request = new Request('baseUrl/a+url/id', 'not under test');
+        $request = new Request('GET', 'baseUrl/a+url/id', []);
         $unexpected = new Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
         $expected = new Response(200, ['Content-Type' => ['application/json']], json_encode([]));
         $cache->set($this->getCacheKey($request), $unexpected);
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(200, ['Content-Type' => ['application/json']], json_encode([]));
             }
         );
@@ -767,7 +771,7 @@ final class ClientTest extends TestCase
         $this->assertSame((string)$expected->getBody(), (string)$actual->getBody());
 
         $adapter = new FakeAdapter(
-            function (Request $request) {
+            function (RequestInterface $request) {
                 return new Response(
                     200,
                     ['Content-Type' => ['application/json']],
@@ -791,8 +795,8 @@ final class ClientTest extends TestCase
     public function getTokenNotInCache()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr($request->getUrl(), -5) === 'token') {
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -800,7 +804,7 @@ final class ClientTest extends TestCase
                     );
                 }
 
-                if ($request->getMethod() === 'GET' && $request->getUrl() === 'baseUrl/v1/resource+name/the+id') {
+                if ($request->getMethod() === 'GET' && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
                 }
             }
@@ -827,8 +831,8 @@ final class ClientTest extends TestCase
     public function setCache()
     {
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr_count($request->getUrl(), 'token') == 1) {
+            function (RequestInterface $request) {
+                if (substr_count($request->getUri(), 'token') == 1) {
                     return new Response(
                         200,
                         ['Content-Type' => ['application/json']],
@@ -836,7 +840,7 @@ final class ClientTest extends TestCase
                     );
                 }
 
-                if (substr_count($request->getUrl(), 'a+url') == 1) {
+                if (substr_count($request->getUri(), 'a+url') == 1) {
                     return new Response(200, ['header' => ['value']], json_encode(['doesnt' => 'matter']));
                 }
             }
@@ -867,8 +871,8 @@ final class ClientTest extends TestCase
             )
         );
         $adapter = new FakeAdapter(
-            function (Request $request) {
-                if (substr_count($request->getUrl(), 'foos')) {
+            function (RequestInterface $request) {
+                if (substr_count($request->getUri(), 'foos')) {
                     return new Response(200, ['Content-Type' => ['application/json']], json_encode(['a body']));
                 }
             }
@@ -887,7 +891,7 @@ final class ClientTest extends TestCase
         return Authentication::createClientCredentials('not under test', 'not under test');
     }
 
-    private function getCacheKey(Request $request) : string
+    private function getCacheKey(RequestInterface $request) : string
     {
         return CacheHelper::getCacheKey($request);
     }

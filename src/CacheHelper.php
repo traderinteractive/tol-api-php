@@ -2,18 +2,20 @@
 
 namespace TraderInteractive\Api;
 
+use Psr\Http\Message\RequestInterface;
+
 abstract class CacheHelper
 {
     /**
      * Returns a valid PSR-11 key.
      *
-     * @param Request $request The request from which the key will be generated.
+     * @param RequestInterface $request The request from which the key will be generated.
      *
      * @return string
      */
-    public static function getCacheKey(Request $request) : string
+    public static function getCacheKey(RequestInterface $request) : string
     {
-        $key = "{$request->getUrl()}|{$request->getBody()}";
+        $key = "{$request->getUri()}|{$request->getBody()}";
         $map = [
             '{' => '_LBRACE_',
             '}'=> '_RBRACE_',

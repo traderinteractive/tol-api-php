@@ -3,12 +3,13 @@
 namespace TraderInteractive\Api;
 
 use DominionEnterprises\Util\Arrays;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 final class FakeAdapter implements AdapterInterface
 {
     /**
-     * @var Request
+     * @var RequestInterface[]
      */
     private $requests = [];
 
@@ -22,7 +23,7 @@ final class FakeAdapter implements AdapterInterface
         $this->handler = $handler;
     }
 
-    public function start(Request $request) : string
+    public function start(RequestInterface $request) : string
     {
         $handle = uniqid();
         $this->requests[] = ['request' => $request, 'handle' => $handle];
@@ -39,10 +40,10 @@ final class FakeAdapter implements AdapterInterface
             return $response;
         }
 
-        throw new \Exception("Unhandled request for '{$request->getUrl()}");
+        throw new \Exception("Unhandled request for '{$request->getUri()}");
     }
 
-    public function getLastRequest() : Request
+    public function getLastRequest() : RequestInterface
     {
         return $this->requests[count($this->requests) - 1]['request'];
     }

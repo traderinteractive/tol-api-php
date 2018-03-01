@@ -2,6 +2,7 @@
 
 namespace TraderInteractive\Api;
 
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -12,11 +13,11 @@ interface AdapterInterface
     /**
      * Start a request
      *
-     * @param Request $request
+     * @param RequestInterface $request
      *
      * @return string opaque handle to give to end()
      */
-    public function start(Request $request) : string;
+    public function start(RequestInterface $request) : string;
 
     /**
      * End a request

@@ -2,6 +2,7 @@
 
 namespace TraderInteractive\Api;
 
+use GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\TestCase;
 use TraderInteractive\Util\Http;
 
@@ -24,7 +25,7 @@ final class GuzzleAdapterTest extends TestCase
     public function requestThrowsOnUnsupporetedMethod()
     {
         $adapter = new GuzzleAdapter();
-        $request = new Request('a resource', 'SILLY', null, []);
+        $request = new Request('SILLY', 'a resource', [], null);
         $adapter->end($adapter->start($request));
     }
 
@@ -38,9 +39,9 @@ final class GuzzleAdapterTest extends TestCase
     {
         $adapter = new GuzzleAdapter();
 
-        $handleOne = $adapter->start(new Request('http://www.google.com', 'GET'));
+        $handleOne = $adapter->start(new Request('GET', 'http://www.google.com'));
         $handleTwo = $adapter->start(
-            new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET')
+            new Request('GET', 'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json')
         );
 
         try {
@@ -67,7 +68,7 @@ final class GuzzleAdapterTest extends TestCase
 
         $handleOne = $adapter->start(new Request('silly://localhost', 'GET'));
         $handleTwo = $adapter->start(
-            new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET')
+            new Request('GET', 'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json')
         );
 
         try {
@@ -102,8 +103,8 @@ final class GuzzleAdapterTest extends TestCase
         $response = $adapter->end(
             $adapter->start(
                 new Request(
-                    'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json',
-                    'GET'
+                    'GET',
+                    'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json'
                 )
             )
         );

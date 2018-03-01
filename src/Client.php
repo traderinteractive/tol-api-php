@@ -6,6 +6,7 @@ use Chadicus\Psr\SimpleCache\NullCache;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -323,7 +324,12 @@ final class Client implements ClientInterface
             $this->refreshAccessToken();
             $headers = $request->getHeaders();
             $headers['Authorization'] = "Bearer {$this->accessToken}";
-            $request = new Request($request->getUrl(), $request->getMethod(), $request->getBody(), $headers);
+            $request = new Request(
+                $request->getMethod(),
+                $request->getUri(),
+                $headers,
+                $request->getBody()
+            );
             $response = $this->adapter->end($this->adapter->start($request));
         }
 
@@ -440,7 +446,7 @@ final class Client implements ClientInterface
 
         $headers['Authorization'] = "Bearer {$this->accessToken}";
 
-        $request = new Request($url, $method, $body, $headers);
+        $request = new Request($method, $url, $headers, $body);
 
         if ($request->getMethod() === 'GET' && $this->cacheMode & self::CACHE_MODE_GET) {
             $cached = $this->cache->get($this->getCacheKey($request));

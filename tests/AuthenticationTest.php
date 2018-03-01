@@ -2,8 +2,9 @@
 
 namespace TraderInteractive\Api;
 
-use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\RequestInterface;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for the Collection class
@@ -32,10 +33,10 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createClientCredentials('id', 'secret');
         $request = $auth->getTokenRequest('baseUrl', null);
-        $this->assertSame('baseUrl/token', $request->getUrl());
+        $this->assertSame('baseUrl/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', $request->getBody());
-        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
+        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', (string)$request->getBody());
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 
     /**
@@ -47,13 +48,13 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createClientCredentials('id', 'secret');
         $request = $auth->getTokenRequest('baseUrl', 'theRefreshToken');
-        $this->assertSame('baseUrl/token', $request->getUrl());
+        $this->assertSame('baseUrl/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame(
             'client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token',
-            $request->getBody()
+            (string)$request->getBody()
         );
-        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 
     /**
@@ -80,13 +81,13 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createOwnerCredentials('id', 'secret', 'username', 'password');
         $request = $auth->getTokenRequest('baseUrl', null);
-        $this->assertSame('baseUrl/token', $request->getUrl());
+        $this->assertSame('baseUrl/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame(
             'client_id=id&client_secret=secret&username=username&password=password&grant_type=password',
-            $request->getBody()
+            (string)$request->getBody()
         );
-        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 
     /**
@@ -98,13 +99,13 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createOwnerCredentials('id', 'secret', 'notUnderTest', 'notUnderTest');
         $request = $auth->getTokenRequest('baseUrl', 'theRefreshToken');
-        $this->assertSame('baseUrl/token', $request->getUrl());
+        $this->assertSame('baseUrl/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame(
             'client_id=id&client_secret=secret&refresh_token=theRefreshToken&grant_type=refresh_token',
-            $request->getBody()
+            (string)$request->getBody()
         );
-        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 
     /**
@@ -154,10 +155,10 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createClientCredentials('id', 'secret', 'token', 'custom');
         $request = $auth->getTokenRequest('baseUrl', null);
-        $this->assertSame('baseUrl/custom', $request->getUrl());
+        $this->assertSame('baseUrl/custom', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', $request->getBody());
-        $this->assertSame(['Content-Type' => 'application/x-www-form-urlencoded'], $request->getHeaders());
+        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', (string)$request->getBody());
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 }
 

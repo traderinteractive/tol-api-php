@@ -2,6 +2,7 @@
 namespace TraderInteractive\Api;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * Client for apis

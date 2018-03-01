@@ -8,6 +8,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -55,18 +56,10 @@ final class GuzzleAdapter implements AdapterInterface
     /**
      * @see AdapterInterface::start()
      */
-    public function start(Request $request) : string
+    public function start(RequestInterface $request) : string
     {
         $handle = uniqid();
-        $this->promises[$handle] = $this->client->requestAsync(
-            $request->getMethod(),
-            $request->getUrl(),
-            [
-                'headers' => $request->getHeaders(),
-                'body' => $request->getBody(),
-            ]
-        );
-
+        $this->promises[$handle] = $this->client->sendAsync($request);
         return $handle;
     }
 

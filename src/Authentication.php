@@ -4,6 +4,8 @@ namespace TraderInteractive\Api;
 use DominionEnterprises\Util;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -67,10 +69,10 @@ final class Authentication
 
             $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
             return new Request(
-                "{$baseUrl}/{$tokenResource}",
                 'POST',
-                Http::buildQueryString($data),
-                ['Content-Type' => 'application/x-www-form-urlencoded']
+                "{$baseUrl}/{$tokenResource}",
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
             );
         };
 
@@ -128,10 +130,10 @@ final class Authentication
                 'grant_type' => 'password',
             ];
             return new Request(
-                "{$baseUrl}/{$tokenResource}",
                 'POST',
-                Http::buildQueryString($data),
-                ['Content-Type' => 'application/x-www-form-urlencoded']
+                "{$baseUrl}/{$tokenResource}",
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
             );
         };
 
@@ -163,9 +165,9 @@ final class Authentication
      * @param string $baseUrl The base url of the API
      * @param string $refreshToken The refresh token of the API
      *
-     * @return \DominionEnterprises\Api\Request
+     * @return RequestInterface
      */
-    public function getTokenRequest($baseUrl, $refreshToken)
+    public function getTokenRequest($baseUrl, $refreshToken) : RequestInterface
     {
         Util::throwIfNotType(['string' => [$baseUrl]], true);
         Util::throwIfNotType(['string' => [$refreshToken]], true, true);
@@ -183,7 +185,7 @@ final class Authentication
      *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
      * @param string $refreshToken The refresh token of the API
      *
-     * @return \DominionEnterprises\Api\Request The built token refresh request
+     * @return RequestInterface The built token refresh request
      */
     private static function getRefreshTokenRequest(
         $baseUrl,
@@ -191,7 +193,7 @@ final class Authentication
         $clientSecret,
         $refreshResource,
         $refreshToken
-    ) : Request {
+    ) : RequestInterface {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
         $data = [
             'client_id' => $clientId,
@@ -203,10 +205,10 @@ final class Authentication
         //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible
         //in Apigee and why the $refreshResource variable exists
         return new Request(
-            "{$baseUrl}/{$refreshResource}",
             'POST',
-            Http::buildQueryString($data),
-            ['Content-Type' => 'application/x-www-form-urlencoded']
+            "{$baseUrl}/{$refreshResource}",
+            ['Content-Type' => 'application/x-www-form-urlencoded'],
+            Http::buildQueryString($data)
         );
     }
 }
