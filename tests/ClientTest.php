@@ -747,7 +747,7 @@ final class ClientTest extends TestCase
         $unexpected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
         $cache->set($this->getCacheKey($request), $unexpected);
-        $adapter = $this->getMockBuilder('\TraderInteractive\Api\Adapter')->setMethods(['start', 'end'])->getMock();
+        $adapter = $this->getMockBuilder(AdapterInterface::class)->setMethods(['start', 'end'])->getMock();
         $adapter->expects($this->once())->method('start')->willReturn(uniqid());
         $adapter->expects($this->once())->method('end')->will(
             $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))

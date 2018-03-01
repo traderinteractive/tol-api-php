@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * Concrete implentation of Adapter interface
  */
-final class GuzzleAdapter implements Adapter
+final class GuzzleAdapter implements AdapterInterface
 {
     /**
      * Collection of Promise\PromiseInterface instances with keys matching what was given from start().
@@ -51,9 +51,9 @@ final class GuzzleAdapter implements Adapter
     }
 
     /**
-     * @see Adapter::start()
+     * @see AdapterInterface::start()
      */
-    public function start(Request $request)
+    public function start(Request $request) : string
     {
         $handle = uniqid();
         $this->promises[$handle] = $this->client->requestAsync(
@@ -73,7 +73,7 @@ final class GuzzleAdapter implements Adapter
      *
      * @throws \InvalidArgumentException
      */
-    public function end($endHandle)
+    public function end(string $endHandle) : Response
     {
         $results = $this->fulfillPromises($this->promises, $this->exceptions);
         foreach ($results as $handle => $response) {

@@ -5,16 +5,16 @@ namespace TraderInteractive\Api;
 /**
  * interface for api requests
  */
-interface Adapter
+interface AdapterInterface
 {
     /**
      * Start a request
      *
      * @param Request $request
      *
-     * @return mixed opaque handle to give to end()
+     * @return string opaque handle to give to end()
      */
-    public function start(Request $request);
+    public function start(Request $request) : string;
 
     /**
      * End a request
@@ -23,5 +23,5 @@ interface Adapter
      *
      * @return Response
      */
-    public function end($handle);
+    public function end(string $handle) : Response;
 }

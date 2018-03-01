@@ -69,7 +69,7 @@ final class Client implements ClientInterface
     /**
      * HTTP Adapter for sending request to the api
      *
-     * @var Adapter
+     * @var AdapterInterface
      */
     private $adapter;
 
@@ -125,7 +125,7 @@ final class Client implements ClientInterface
     /**
      * Create a new instance of Client
      *
-     * @param Adapter $adapter
+     * @param AdapterInterface $adapter
      * @param Authentication $authentication
      * @param string $baseUrl
      * @param int $cacheMode
@@ -137,7 +137,7 @@ final class Client implements ClientInterface
      * @throws \InvalidArgumentException Thrown if $cacheMode is not one of the cache mode constants
      */
     public function __construct(
-        Adapter $adapter,
+        AdapterInterface $adapter,
         Authentication $authentication,
         string $baseUrl,
         int $cacheMode = self::CACHE_MODE_NONE,

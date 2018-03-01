@@ -4,7 +4,7 @@ namespace TraderInteractive\Api;
 
 use DominionEnterprises\Util\Arrays;
 
-final class FakeAdapter implements Adapter
+final class FakeAdapter implements AdapterInterface
 {
     /**
      * @var Request
@@ -21,14 +21,14 @@ final class FakeAdapter implements Adapter
         $this->handler = $handler;
     }
 
-    public function start(Request $request)
+    public function start(Request $request) : string
     {
         $handle = uniqid();
         $this->requests[] = ['request' => $request, 'handle' => $handle];
         return $handle;
     }
 
-    public function end($handle)
+    public function end(string $handle) : Response
     {
         $request = Arrays::where($this->requests, ['handle' => $handle])[0]['request'];
 
