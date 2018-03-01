@@ -31,18 +31,19 @@ final class GuzzleAdapter implements AdapterInterface
     /**
      * Collection of \Exception with keys matching what was given from start().
      *
-     * @var array
+     * @var ArrayObject
      */
-    private $exceptions = [];
+    private $exceptions;
 
     /**
      * @var \Guzzle\Http\Client
      */
     private $client;
 
-    public function __construct()
+    public function __construct(GuzzleClient $client = null)
     {
-        $this->client = new GuzzleClient(
+        $this->exceptions = new ArrayObject();
+        $this->client = $client ?? new GuzzleClient(
             [
                 'allow_redirects' => false, //stop guzzle from following redirects
                 'http_errors' => false, //only for 400/500 error codes, actual exceptions can still happen
@@ -121,23 +122,23 @@ final class GuzzleAdapter implements AdapterInterface
      *
      * @return array Array of fulfilled PSR7 responses.
      */
-    private function fulfillPromises(array $promises, array &$exceptions)
+    private function fulfillPromises(array $promises, ArrayObject $exceptions) : array
     {
         if (empty($promises)) {
             return [];
         }
 
-        $results = [];
+        $results = new ArrayObject();
         Promise\each(
             $this->promises,
-            function (ResponseInterface $response, $index) use (&$results) {
+            function (ResponseInterface $response, $index) use ($results) {
                 $results[$index] = $response;
             },
-            function (RequestException $e, $index) use (&$exceptions) {
+            function (RequestException $e, $index) use ($exceptions) {
                 $exceptions[$index] = $e;
             }
         )->wait();
 
-        return $results;
+        return $results->getArrayCopy();
     }
 }
