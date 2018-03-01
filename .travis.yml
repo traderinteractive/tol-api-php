@@ -4,9 +4,6 @@ php:
   - 7.1
   - 7.2
   - nightly
-services:
-  - redis-server
-  - mongodb
 env:
   - PREFER_LOWEST="--prefer-lowest --prefer-stable"
   - PREFER_LOWEST=""
@@ -15,7 +12,6 @@ matrix:
   allow_failures:
      - php: nightly
 before_script:
-  - yes '' | pecl install -f mongodb-1.1
   - composer update $PREFER_LOWEST
 script:
   - ./vendor/bin/phpunit --coverage-clover clover.xml
