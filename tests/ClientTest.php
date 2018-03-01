@@ -138,17 +138,12 @@ final class ClientTest extends TestCase
      */
     public function defaultHeadersArePassed()
     {
-        $adapter = $this->getMockBuilder(AdapterInterface::class)->setMethods(['start', 'end'])->getMock();
-        $adapter->expects($this->once())->method('start')->will(
-            $this->returnCallback(
-                function ($request) {
-                    $this->assertEquals('foo', $request->getHeaders()['testHeader']);
-                    return uniqid();
-                }
-            )
-        );
-        $adapter->expects($this->once())->method('end')->will(
-            $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
+        $test = $this;
+        $adapter = new FakeAdapter(
+            function (Request $request) use ($test) {
+                $test->assertEquals('foo', $request->getHeaders()['testHeader']);
+                return new Response(200, ['Content-Type' => ['application/json']], []);
+            }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
         $client->setDefaultHeaders(['testHeader' => 'foo']);
@@ -747,10 +742,10 @@ final class ClientTest extends TestCase
         $unexpected = new Response(200, ['key' => ['value']], ['doesnt' => 'matter']);
         $expected = new Response(200, ['Content-Type' => ['application/json']], []);
         $cache->set($this->getCacheKey($request), $unexpected);
-        $adapter = $this->getMockBuilder(AdapterInterface::class)->setMethods(['start', 'end'])->getMock();
-        $adapter->expects($this->once())->method('start')->willReturn(uniqid());
-        $adapter->expects($this->once())->method('end')->will(
-            $this->returnValue(new Response(200, ['Content-Type' => ['application/json']], []))
+        $adapter = new FakeAdapter(
+            function (Request $request) {
+                return new Response(200, ['Content-Type' => ['application/json']], []);
+            }
         );
         $client = new Client(
             $adapter,
