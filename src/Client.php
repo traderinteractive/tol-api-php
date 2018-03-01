@@ -97,7 +97,7 @@ final class Client implements ClientInterface
     /**
      * Storage for cached API responses
      *
-     * @var Cache
+     * @var CacheInterface
      */
     private $cache;
 
