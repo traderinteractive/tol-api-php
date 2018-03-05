@@ -35,7 +35,10 @@ final class AuthenticationTest extends TestCase
         $request = $auth->getTokenRequest('baseUrl', null);
         $this->assertSame('baseUrl/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', (string)$request->getBody());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&grant_type=client_credentials',
+            (string)$request->getBody()
+        );
         $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 
@@ -157,7 +160,10 @@ final class AuthenticationTest extends TestCase
         $request = $auth->getTokenRequest('baseUrl', null);
         $this->assertSame('baseUrl/custom', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
-        $this->assertSame('client_id=id&client_secret=secret&grant_type=client_credentials', (string)$request->getBody());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&grant_type=client_credentials',
+            (string)$request->getBody()
+        );
         $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
 }

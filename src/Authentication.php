@@ -151,7 +151,11 @@ final class Authentication
     {
         $parsedJson = json_decode((string)$response->getBody(), true);
         Util::ensureNot('invalid_client', Arrays::get($parsedJson, 'error'), 'Invalid Credentials');
-        Util::ensure(200, $response->getStatusCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
+        Util::ensure(
+            200,
+            $response->getStatusCode(),
+            Arrays::get($parsedJson, 'error_description', 'Unknown API error')
+        );
         return [
             $parsedJson['access_token'],
             Arrays::get($parsedJson, 'refresh_token'),
