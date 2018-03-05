@@ -7,7 +7,7 @@ use Chadicus\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 
@@ -27,7 +27,7 @@ final class ClientTest extends TestCase
     {
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(
+                return new Psr7Response(
                     200,
                     ['Content-Type' => ['application/json']],
                     ['access_token' => 'foo', 'expires_in' => 1]
@@ -48,7 +48,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -59,14 +59,18 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer 1']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
 
-                return new Response(401, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_grant']));
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
         $this->assertSame([1, null], $client->getTokens());
     }
 
@@ -83,13 +87,17 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_client']));
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['error' => 'invalid_client'])
+                    );
                 }
             }
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $client->end($client->startIndex('a resource', []))->getStatusCode();
+        $client->end($client->startIndex('a resource', []))->getHttpCode();
     }
 
     /**
@@ -103,7 +111,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -114,7 +122,7 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer foo']) {
-                    return new Response(
+                    return new Psr7Response(
                         401,
                         ['Content-Type' => ['application/json']],
                         json_encode(['error' => ['code' => 'invalid_token']])
@@ -123,15 +131,19 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer 0']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
 
-                return new Response(401, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_grant']));
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
             }
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -145,12 +157,12 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use ($test) {
                 $test->assertEquals(['foo'], $request->getHeaders()['testHeader']);
-                return new Response(200, ['Content-Type' => ['application/json']]);
+                return new Psr7Response(200, ['Content-Type' => ['application/json']]);
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
         $client->setDefaultHeaders(['testHeader' => 'foo']);
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -164,7 +176,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -175,15 +187,19 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer 1']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
 
-                return new Response(401, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_grant']));
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
             }
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -197,7 +213,7 @@ final class ClientTest extends TestCase
             function (RequestInterface $request) {
                 if (substr_count($request->getUri(), 'token') === 1
                         && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'badToken', 'refresh_token' => 'boo', 'expires_in' => 1])
@@ -206,7 +222,7 @@ final class ClientTest extends TestCase
 
                 if (substr_count($request->getUri(), 'token') === 1
                         && substr_count($request->getBody(), 'refresh_token=boo') === 1) {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'goodToken', 'expires_in' => 1])
@@ -215,15 +231,19 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer goodToken']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
 
-                return new Response(401, ['Content-Type' => ['application/json']], json_encode(['error' => 'invalid_grant']));
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
             }
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -237,7 +257,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -246,7 +266,7 @@ final class ClientTest extends TestCase
                     return $response;
                 }
 
-                return new Response(
+                return new Psr7Response(
                     401,
                     ['Content-Type' => ['application/json']],
                     json_encode(['someotherproblem' => 'Something other than invalid access token'])
@@ -254,7 +274,7 @@ final class ClientTest extends TestCase
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(401, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(401, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -268,7 +288,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -279,9 +299,9 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer 1']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
-                return new Response(
+                return new Psr7Response(
                     401,
                     ['Content-Type' => ['application/json']],
                     json_encode(['fault' => ['faultstring' => 'AccEss TokEn eXpiRed']])
@@ -289,7 +309,7 @@ final class ClientTest extends TestCase
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -303,7 +323,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    $response = new Response(
+                    $response = new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
@@ -314,10 +334,10 @@ final class ClientTest extends TestCase
 
                 $headers = $request->getHeaders();
                 if ($headers['Authorization'] === ['Bearer 1']) {
-                    return new Response(200, ['Content-Type' => ['application/json']]);
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
                 }
 
-                return new Response(
+                return new Psr7Response(
                     401,
                     ['Content-Type' => ['application/json']],
                     json_encode(['fault' => ['faultstring' => 'AccEss TokEn eXpiRed']])
@@ -325,7 +345,7 @@ final class ClientTest extends TestCase
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
-        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getStatusCode());
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
     /**
@@ -338,7 +358,11 @@ final class ClientTest extends TestCase
     {
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(400, ['Content-Type' => ['application/json']], json_encode(['error_description' => 'an error']));
+                return new Psr7Response(
+                    400,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error_description' => 'an error'])
+                );
             }
         );
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
@@ -355,7 +379,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -364,7 +388,11 @@ final class ClientTest extends TestCase
 
                 if ($request->getMethod() === 'GET'
                         && urldecode($request->getUri()) === 'baseUrl/v1/resource name?the name=the value') {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -373,9 +401,9 @@ final class ClientTest extends TestCase
 
         $response = $client->index('resource name', ['the name' => 'the value']);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -388,15 +416,20 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
                     );
                 }
 
-                if ($request->getMethod() === 'GET' && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                if ($request->getMethod() === 'GET'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -404,9 +437,9 @@ final class ClientTest extends TestCase
 
         $response = $client->get('resource name', 'the id');
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -419,7 +452,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -428,7 +461,11 @@ final class ClientTest extends TestCase
 
                 if ($request->getMethod() === 'GET'
                         && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id?foo=bar') {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -436,9 +473,9 @@ final class ClientTest extends TestCase
 
         $response = $client->get('resource name', 'the id', ['foo' => 'bar']);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -451,7 +488,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -467,7 +504,11 @@ final class ClientTest extends TestCase
                             'Authorization' => ['Bearer a token'],
                         ]
                 ) {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -476,9 +517,9 @@ final class ClientTest extends TestCase
 
         $response = $client->put('resource name', 'the id', ['the key' => 'the value']);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -491,7 +532,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -507,7 +548,11 @@ final class ClientTest extends TestCase
                             'Authorization' => ['Bearer a token'],
                         ]
                 ) {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -515,9 +560,9 @@ final class ClientTest extends TestCase
 
         $response = $client->post('resource name', ['the key' => 'the value']);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -530,7 +575,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -548,7 +593,7 @@ final class ClientTest extends TestCase
                     $body = (string)$request->getBody();
 
                     if ($body === '' || $body === '{"the key":"the value"}') {
-                        return new Response(204, ['Content-Type' => ['application/json']], json_encode([]));
+                        return new Psr7Response(204, ['Content-Type' => ['application/json']], json_encode([]));
                     }
                 }
             }
@@ -557,9 +602,9 @@ final class ClientTest extends TestCase
 
         $response = $client->delete('resource name', 'the id');
 
-        $this->assertSame(204, $response->getStatusCode());
-        $this->assertSame([], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(204, $response->getHttpCode());
+        $this->assertSame([], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -575,7 +620,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -593,7 +638,7 @@ final class ClientTest extends TestCase
                     $body = $request->getBody();
 
                     if ($body === null || $body === '{"the key":"the value"}') {
-                        return new Response(204, ['Content-Type' => ['application/json']]);
+                        return new Psr7Response(204, ['Content-Type' => ['application/json']]);
                     }
                 }
             }
@@ -617,7 +662,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
@@ -635,7 +680,7 @@ final class ClientTest extends TestCase
                     $body = (string)$request->getBody();
 
                     if ($body === '' || $body === '{"the key":"the value"}') {
-                        return new Response(204, ['Content-Type' => ['application/json']], json_encode([]));
+                        return new Psr7Response(204, ['Content-Type' => ['application/json']], json_encode([]));
                     }
                 }
             }
@@ -644,9 +689,9 @@ final class ClientTest extends TestCase
 
         $response = $client->delete('resource name', 'the id', ['the key' => 'the value']);
 
-        $this->assertSame(204, $response->getStatusCode());
-        $this->assertSame([], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(204, $response->getHttpCode());
+        $this->assertSame([], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -658,7 +703,7 @@ final class ClientTest extends TestCase
     {
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(
+                return new Psr7Response(
                     200,
                     ['Content-Type' => ['application/json']],
                     json_encode(['access_token' => 'foo', 'url' => (string)$request->getUri(), 'expires_in' => 1])
@@ -667,8 +712,7 @@ final class ClientTest extends TestCase
         );
         $client = new Client($adapter, $this->getAuthentication(), 'url');
         $results = $client->index('resource', ['abc' => ['1$2(3', '4)5*6']]);
-        $response = json_decode($results->getBody(), true);
-        $this->assertSame('url/resource?abc=1%242%283&abc=4%295%2A6', $response['url']);
+        $this->assertSame('url/resource?abc=1%242%283&abc=4%295%2A6', $results->getResponse()['url']);
     }
 
     /**
@@ -691,7 +735,7 @@ final class ClientTest extends TestCase
     {
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(
+                return new Psr7Response(
                     200,
                     ['Content-Type' => ['application/json']],
                     json_encode(['access_token' => 'foo', 'expires_in' => 1])
@@ -716,7 +760,7 @@ final class ClientTest extends TestCase
     {
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(
+                return new Psr7Response(
                     200,
                     ['Content-Type' => ['application/json']],
                     json_encode(['access_token' => 'token', 'expires_in' => 1])
@@ -725,13 +769,13 @@ final class ClientTest extends TestCase
         );
         $cache = new InMemoryCache();
         $request = new Request('GET', 'baseUrl/a+url/id', []);
-        $expected = new Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
-        $cache->set($this->getCacheKey($request), $expected);
+        $psr7Response = new Psr7Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
+        $cache->set($this->getCacheKey($request), $psr7Response);
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->get('a url', 'id');
-        $this->assertSame($expected->getStatusCode(), $actual->getStatusCode());
-        $this->assertSame((string)$expected->getBody(), (string)$actual->getBody());
-        $this->assertSame($expected->getHeaders(), $actual->getHeaders());
+        $this->assertSame($psr7Response->getStatusCode(), $actual->getHttpCode());
+        $this->assertSame(json_decode($psr7Response->getBody(), true), $actual->getResponse());
+        $this->assertSame($psr7Response->getHeaders(), $actual->getResponseHeaders());
     }
 
     /**
@@ -744,12 +788,12 @@ final class ClientTest extends TestCase
     {
         $cache = new InMemoryCache();
         $request = new Request('GET', 'baseUrl/a+url/id', []);
-        $unexpected = new Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
-        $expected = new Response(200, ['Content-Type' => ['application/json']], json_encode([]));
+        $unexpected = new Psr7Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
+        $expected = new Psr7Response(200, ['Content-Type' => ['application/json']], json_encode([]));
         $cache->set($this->getCacheKey($request), $unexpected);
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(200, ['Content-Type' => ['application/json']], json_encode([]));
+                return new Psr7Response(200, ['Content-Type' => ['application/json']], json_encode([]));
             }
         );
         $client = new Client(
@@ -761,9 +805,9 @@ final class ClientTest extends TestCase
             'foo'
         );
         $actual = $client->end($client->startGet('a url', 'id'));
-        $this->assertSame($expected->getStatusCode(), $actual->getStatusCode());
-        $this->assertSame($expected->getHeaders(), $actual->getHeaders());
-        $this->assertSame((string)$expected->getBody(), (string)$actual->getBody());
+        $this->assertSame($expected->getStatusCode(), $actual->getHttpCode());
+        $this->assertSame($expected->getHeaders(), $actual->getResponseHeaders());
+        $this->assertSame(json_decode($expected->getBody(), true), $actual->getResponse());
 
         $actual = $cache->get($this->getCacheKey($request));
         $this->assertSame($expected->getStatusCode(), $actual->getStatusCode());
@@ -772,7 +816,7 @@ final class ClientTest extends TestCase
 
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
-                return new Response(
+                return new Psr7Response(
                     200,
                     ['Content-Type' => ['application/json']],
                     json_encode(['access_token' => 'token', 'expires_in' => 1])
@@ -781,9 +825,9 @@ final class ClientTest extends TestCase
         );
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
-        $this->assertSame($expected->getStatusCode(), $actual->getStatusCode());
-        $this->assertSame($expected->getHeaders(), $actual->getHeaders());
-        $this->assertSame((string)$expected->getBody(), (string)$actual->getBody());
+        $this->assertSame($expected->getStatusCode(), $actual->getHttpCode());
+        $this->assertSame($expected->getHeaders(), $actual->getResponseHeaders());
+        $this->assertSame(json_decode($expected->getBody(), true), $actual->getResponse());
     }
 
     /**
@@ -797,15 +841,20 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr($request->getUri(), -5) === 'token') {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'a token', 'expires_in' => 1])
                     );
                 }
 
-                if ($request->getMethod() === 'GET' && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['key' => 'value']));
+                if ($request->getMethod() === 'GET'
+                        && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id') {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['key' => 'value'])
+                    );
                 }
             }
         );
@@ -819,9 +868,9 @@ final class ClientTest extends TestCase
 
         $response = $client->end($client->startGet('resource name', 'the id'));
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(['key' => 'value'], json_decode($response->getBody(), true));
-        $this->assertSame(['Content-Type' => ['application/json']], $response->getHeaders());
+        $this->assertSame(200, $response->getHttpCode());
+        $this->assertSame(['key' => 'value'], $response->getResponse());
+        $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
     }
 
     /**
@@ -833,7 +882,7 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr_count($request->getUri(), 'token') == 1) {
-                    return new Response(
+                    return new Psr7Response(
                         200,
                         ['Content-Type' => ['application/json']],
                         json_encode(['access_token' => 'token', 'expires_in' => 1])
@@ -841,7 +890,7 @@ final class ClientTest extends TestCase
                 }
 
                 if (substr_count($request->getUri(), 'a+url') == 1) {
-                    return new Response(200, ['header' => ['value']], json_encode(['doesnt' => 'matter']));
+                    return new Psr7Response(200, ['header' => ['value']], json_encode(['doesnt' => 'matter']));
                 }
             }
         );
@@ -849,7 +898,7 @@ final class ClientTest extends TestCase
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
         $actual = $cache->get('baseUrl_FSLASH_a+url_FSLASH_id|');
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, Response::fromPsr7Response($actual));
     }
 
     /**
@@ -864,7 +913,7 @@ final class ClientTest extends TestCase
         $request = $authentication->getTokenRequest('baseUrl', null);
         $cache->set(
             $this->getCacheKey($request),
-            new Response(
+            new Psr7Response(
                 200,
                 ['Content-Type' => ['application/json']],
                 json_encode(['access_token' => 'an access token', 'expires_in' => 1])
@@ -873,17 +922,17 @@ final class ClientTest extends TestCase
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 if (substr_count($request->getUri(), 'foos')) {
-                    return new Response(200, ['Content-Type' => ['application/json']], json_encode(['a body']));
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']], json_encode(['a body']));
                 }
             }
         );
         $client = new Client($adapter, $authentication, 'baseUrl', Client::CACHE_MODE_TOKEN, $cache);
         // no token requests should be made
-        $this->assertSame(['a body'], json_decode($client->index('foos')->getBody(), true));
+        $this->assertSame(['a body'], $client->index('foos')->getResponse());
         // empty the cache
         $cache->clear();
         // no token requests should be made with second  request
-        $this->assertSame(['a body'], json_decode($client->index('foos')->getBody(), true));
+        $this->assertSame(['a body'], $client->index('foos')->getResponse());
     }
 
     private function getAuthentication() : Authentication

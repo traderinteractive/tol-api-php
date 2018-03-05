@@ -157,10 +157,10 @@ final class Collection implements \Iterator, \Countable
         $this->filters['offset'] = $this->offset;
         $indexResponse = $this->client->index($this->resource, $this->filters);
 
-        $httpCode = $indexResponse->getStatusCode();
+        $httpCode = $indexResponse->getHttpCode();
         Util::ensure(200, $httpCode, "Did not receive 200 from API. Instead received {$httpCode}");
 
-        $response = json_decode($indexResponse->getBody(), true);
+        $response = $indexResponse->getResponse();
         $this->limit = $response['pagination']['limit'];
         $this->total = $response['pagination']['total'];
         $this->result = $response['result'];

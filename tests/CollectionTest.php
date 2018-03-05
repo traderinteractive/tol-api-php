@@ -2,7 +2,6 @@
 
 namespace TraderInteractive\Api;
 
-use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -307,16 +306,14 @@ final class CollectionTest extends TestCase
             $offset = (int)($filters['offset'] ?? 0);
             $limit = (int)($filters['limit'] ?? 2);
 
-            $result = json_encode(
-                [
-                    'pagination' => [
-                        'offset' => $offset,
-                        'total' => count($items),
-                        'limit' => min($limit, count($items)),
-                    ],
-                    'result' => array_slice($items, $offset, $limit),
-                ]
-            );
+            $result = [
+                'pagination' => [
+                    'offset' => $offset,
+                    'total' => count($items),
+                    'limit' => min($limit, count($items)),
+                ],
+                'result' => array_slice($items, $offset, $limit),
+            ];
 
             return new Response(200, ['Content-Type' => ['application/json']], $result);
         };

@@ -1,7 +1,6 @@
 <?php
 namespace TraderInteractive\Api;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
 
 /**
@@ -29,7 +28,7 @@ interface ClientInterface
     /**
      * @see startIndex()
      */
-    public function index(string $resource, array $filters = []) : ResponseInterface;
+    public function index(string $resource, array $filters = []) : Response;
 
     /**
      * Get the details of an API resource based on $id
@@ -45,7 +44,7 @@ interface ClientInterface
     /**
      * @see startGet()
      */
-    public function get(string $resource, string $id, array $parameters = []) : ResponseInterface;
+    public function get(string $resource, string $id, array $parameters = []) : Response;
 
     /**
      * Create a new instance of an API resource using the provided $data
@@ -60,7 +59,7 @@ interface ClientInterface
     /**
      * @see startPost()
      */
-    public function post(string $resource, array $data) : ResponseInterface;
+    public function post(string $resource, array $data) : Response;
 
     /**
      * Update an existing instance of an API resource specified by $id with the provided $data
@@ -76,7 +75,7 @@ interface ClientInterface
     /**
      * @see startPut()
      */
-    public function put(string $resource, string $id, array $data) : ResponseInterface;
+    public function put(string $resource, string $id, array $data) : Response;
 
     /**
      * Delete an existing instance of an API resource specified by $id
@@ -92,16 +91,16 @@ interface ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete(string $resource, string $id = null, array $data = null) : ResponseInterface;
+    public function delete(string $resource, string $id = null, array $data = null) : Response;
 
     /**
      * Get response of start*() method
      *
      * @param string $handle opaque handle from start*()
      *
-     * @return ResponseInterface
+     * @return Response
      */
-    public function end(string $handle) : ResponseInterface;
+    public function end(string $handle) : Response;
 
     /**
      * Set the default headers

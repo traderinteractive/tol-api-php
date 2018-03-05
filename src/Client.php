@@ -190,7 +190,7 @@ final class Client implements ClientInterface
     /**
      * @see startIndex()
      */
-    public function index(string $resource, array $filters = []) : ResponseInterface
+    public function index(string $resource, array $filters = []) : Response
     {
         return $this->end($this->startIndex($resource, $filters));
     }
@@ -217,7 +217,7 @@ final class Client implements ClientInterface
     /**
      * @see startGet()
      */
-    public function get(string $resource, string $id, array $parameters = []) : ResponseInterface
+    public function get(string $resource, string $id, array $parameters = []) : Response
     {
         return $this->end($this->startGet($resource, $id, $parameters));
     }
@@ -239,7 +239,7 @@ final class Client implements ClientInterface
     /**
      * @see startPost()
      */
-    public function post(string $resource, array $data) : ResponseInterface
+    public function post(string $resource, array $data) : Response
     {
         return $this->end($this->startPost($resource, $data));
     }
@@ -262,7 +262,7 @@ final class Client implements ClientInterface
     /**
      * @see startPut()
      */
-    public function put(string $resource, string $id, array $data) : ResponseInterface
+    public function put(string $resource, string $id, array $data) : Response
     {
         return $this->end($this->startPut($resource, $id, $data));
     }
@@ -290,7 +290,7 @@ final class Client implements ClientInterface
     /**
      * @see startDelete()
      */
-    public function delete(string $resource, string $id = null, array $data = null) : ResponseInterface
+    public function delete(string $resource, string $id = null, array $data = null) : Response
     {
         return $this->end($this->startDelete($resource, $id, $data));
     }
@@ -300,9 +300,9 @@ final class Client implements ClientInterface
      *
      * @param string $handle opaque handle from start*()
      *
-     * @return ResponseInterface
+     * @return Response
      */
-    public function end(string $handle) : ResponseInterface
+    public function end(string $handle) : Response
     {
         Util::ensure(
             true,
@@ -315,7 +315,7 @@ final class Client implements ClientInterface
         unset($this->handles[$handle]);
 
         if ($cachedResponse !== null) {
-            return $cachedResponse;
+            return Response::fromPsr7Response($cachedResponse);
         }
 
         $response = $this->adapter->end($adapterHandle);
@@ -339,7 +339,7 @@ final class Client implements ClientInterface
             $this->cache->set($this->getCacheKey($request), $response);
         }
 
-        return $response;
+        return Response::fromPsr7Response($response);
     }
 
     /**
