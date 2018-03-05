@@ -15,7 +15,7 @@ abstract class CacheHelper
      */
     public static function getCacheKey(RequestInterface $request) : string
     {
-        $key = "{$request->getUri()}|{$request->getBody()}";
+        $key = "{$request->getMethod()}|{$request->getUri()}|{$request->getBody()}";
         $map = [
             '{' => '_LBRACE_',
             '}'=> '_RBRACE_',
