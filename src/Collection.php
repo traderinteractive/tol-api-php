@@ -2,7 +2,7 @@
 
 namespace TraderInteractive\Api;
 
-use DominionEnterprises\Util;
+use TraderInteractive\Util;
 
 /**
  * Class for iterating index responses. Collections are readonly

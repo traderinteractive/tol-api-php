@@ -2,7 +2,7 @@
 
 namespace TraderInteractive\Api;
 
-use DominionEnterprises\Util\Arrays;
+use TraderInteractive\Util\Arrays;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 

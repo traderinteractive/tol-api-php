@@ -3,9 +3,9 @@
 namespace TraderInteractive\Api;
 
 use Chadicus\Psr\SimpleCache\NullCache;
-use DominionEnterprises\Util;
-use DominionEnterprises\Util\Arrays;
-use DominionEnterprises\Util\Http;
+use TraderInteractive\Util;
+use TraderInteractive\Util\Arrays;
+use TraderInteractive\Util\Http;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;

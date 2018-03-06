@@ -3,7 +3,7 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
-use DominionEnterprises\Util;
+use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\RequestException;
