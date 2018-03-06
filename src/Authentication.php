@@ -38,14 +38,14 @@ final class Authentication
      * @param string $refreshResource The refresh token resource of the API
      *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
      *
-     * @return \DominionEnterprises\Api\Authentication
+     * @return Authentication
      */
     public static function createClientCredentials(
         $clientId,
         $clientSecret,
         $refreshResource = 'token',
         $tokenResource = 'token'
-    ) {
+    ) : Authentication {
         Util::throwIfNotType(['string' => [$clientId, $clientSecret]], true);
 
         $getTokenRequestFunc = function (
@@ -89,7 +89,7 @@ final class Authentication
      * @param string $refreshResource The refresh token resource of the API
      *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
      *
-     * @return \DominionEnterprises\Api\Authentication
+     * @return Authentication
      */
     public static function createOwnerCredentials(
         $clientId,
@@ -98,7 +98,7 @@ final class Authentication
         $password,
         $refreshResource = 'token',
         $tokenResource = 'token'
-    ) {
+    ) : Authentication {
         Util::throwIfNotType(['string' => [$clientId, $clientSecret, $username, $password]], true);
 
         $getTokenRequestFunc = function (
