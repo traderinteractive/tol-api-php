@@ -72,10 +72,8 @@ final class Collection implements \Iterator, \Countable
      * @param string $resource name of API resource to request
      * @param array $filters key value pair array of search filters
      */
-    public function __construct(ClientInterface $client, $resource, array $filters = [])
+    public function __construct(ClientInterface $client, string $resource, array $filters = [])
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
-
         $this->client = $client;
         $this->resource = $resource;
         $this->filters = $filters;
@@ -85,9 +83,9 @@ final class Collection implements \Iterator, \Countable
     /**
      * @see Countable::count()
      *
-     * @return int
+     * @return integer
      */
-    public function count()
+    public function count() : int
     {
         if ($this->position === -1) {
             $this->next();
@@ -113,9 +111,9 @@ final class Collection implements \Iterator, \Countable
     /**
      * @see Iterator::key()
      *
-     * @return int
+     * @return integer
      */
-    public function key()
+    public function key() : int
     {
         if ($this->position === -1) {
             $this->next();
@@ -131,7 +129,7 @@ final class Collection implements \Iterator, \Countable
      *
      * @return bool
      */
-    public function valid()
+    public function valid() : bool
     {
         if ($this->position === -1) {
             $this->next();
@@ -172,7 +170,7 @@ final class Collection implements \Iterator, \Countable
      *
      * @return array
      */
-    public function current()
+    public function current() : array
     {
         if ($this->position === -1) {
             $this->next();
@@ -193,9 +191,9 @@ final class Collection implements \Iterator, \Countable
      *
      * @param string $key The name of the field for which the values will be returned.
      *
-     * @return iterable
+     * @return \Iterator
      */
-    public function column($key)
+    public function column(string $key) : \Iterator
     {
         foreach ($this as $item) {
             yield Util\Arrays::get($item, $key);
@@ -209,7 +207,7 @@ final class Collection implements \Iterator, \Countable
      *
      * @return \Generator
      */
-    public function select(array $keys)
+    public function select(array $keys) : \Iterator
     {
         foreach ($this as $item) {
             $result = array_fill_keys($keys, null);

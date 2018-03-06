@@ -41,16 +41,14 @@ final class Authentication
      * @return Authentication
      */
     public static function createClientCredentials(
-        $clientId,
-        $clientSecret,
-        $refreshResource = 'token',
-        $tokenResource = 'token'
+        string $clientId,
+        string $clientSecret,
+        string $refreshResource = 'token',
+        string $tokenResource = 'token'
     ) : Authentication {
-        Util::throwIfNotType(['string' => [$clientId, $clientSecret]], true);
-
         $getTokenRequestFunc = function (
-            $baseUrl,
-            $refreshToken
+            string $baseUrl,
+            string $refreshToken = null
         ) use (
             $clientId,
             $clientSecret,
@@ -92,18 +90,16 @@ final class Authentication
      * @return Authentication
      */
     public static function createOwnerCredentials(
-        $clientId,
-        $clientSecret,
-        $username,
-        $password,
-        $refreshResource = 'token',
-        $tokenResource = 'token'
+        string $clientId,
+        string $clientSecret,
+        string $username,
+        string $password,
+        string $refreshResource = 'token',
+        string $tokenResource = 'token'
     ) : Authentication {
-        Util::throwIfNotType(['string' => [$clientId, $clientSecret, $username, $password]], true);
-
         $getTokenRequestFunc = function (
-            $baseUrl,
-            $refreshToken
+            string $baseUrl,
+            string $refreshToken = null
         ) use (
             $clientId,
             $clientSecret,
@@ -166,16 +162,13 @@ final class Authentication
     /**
      * Creates a Request object for obtaining a new token from the API
      *
-     * @param string $baseUrl The base url of the API
-     * @param string $refreshToken The refresh token of the API
+     * @param string      $baseUrl      The base url of the API
+     * @param string|null $refreshToken The refresh token of the API
      *
      * @return RequestInterface
      */
-    public function getTokenRequest($baseUrl, $refreshToken) : RequestInterface
+    public function getTokenRequest(string $baseUrl, string $refreshToken = null) : RequestInterface
     {
-        Util::throwIfNotType(['string' => [$baseUrl]], true);
-        Util::throwIfNotType(['string' => [$refreshToken]], true, true);
-
         return call_user_func($this->getTokenRequestFunc, $baseUrl, $refreshToken);
     }
 
@@ -192,11 +185,11 @@ final class Authentication
      * @return RequestInterface The built token refresh request
      */
     private static function getRefreshTokenRequest(
-        $baseUrl,
-        $clientId,
-        $clientSecret,
-        $refreshResource,
-        $refreshToken
+        string $baseUrl,
+        string $clientId,
+        string $clientSecret,
+        string $refreshResource,
+        string $refreshToken
     ) : RequestInterface {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
         $data = [
