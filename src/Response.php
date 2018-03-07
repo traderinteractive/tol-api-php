@@ -76,7 +76,7 @@ final class Response
         return $this->headers;
     }
 
-    public static function fromPsr7Response(ResponseInterface $response)
+    public static function fromPsr7Response(ResponseInterface $response) : Response
     {
         return new self(
             $response->getStatusCode(),

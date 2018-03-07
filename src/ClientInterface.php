@@ -1,8 +1,6 @@
 <?php
 namespace TraderInteractive\Api;
 
-use Psr\Http\Message\RequestInterface;
-
 /**
  * Client for apis
  */

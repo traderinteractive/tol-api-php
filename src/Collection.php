@@ -68,9 +68,9 @@ final class Collection implements \Iterator, \Countable
     /**
      * Create a new collection
      *
-     * @param Client $client client connection to the API
-     * @param string $resource name of API resource to request
-     * @param array $filters key value pair array of search filters
+     * @param ClientInterface $client   Configured client connection to the API.
+     * @param string          $resource The name of API resource to request.
+     * @param array           $filters  A key value pair array of search filters.
      */
     public function __construct(ClientInterface $client, string $resource, array $filters = [])
     {

@@ -18,6 +18,6 @@ And there are not coding standard violations by running
 ```
 
 ## Builds
-Our [Travis build](https://travis-ci.org/traderinteractive/util-file-php) executes [PHPUnit](http://www.phpunit.de) and uses [Coveralls](https://coveralls.io/) to enforce code coverage.
+Our [Travis build](https://travis-ci.org/traderinteractive/tol-api-php) executes [PHPUnit](http://www.phpunit.de) and uses [Coveralls](https://coveralls.io/) to enforce code coverage.
 While the build does not strictly enforce 100% code coverage, it will not allow coverage to drop below its current percentage.
 [Scrutinizer](https://scrutinizer-ci.com/) is used to ensure code quality and enforce the [coding standard](http://www.php-fig.org/psr/psr-2/).

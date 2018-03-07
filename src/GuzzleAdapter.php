@@ -73,10 +73,9 @@ final class GuzzleAdapter implements AdapterInterface
         $results = $this->fulfillPromises($this->promises, $this->exceptions);
         foreach ($results as $handle => $response) {
             try {
-                $body = []; //default to empty body
                 $contents = (string)$response->getBody();
                 if (trim($contents) !== '') {
-                    $body = json_decode($contents, true);
+                    json_decode($contents, true);
                     Util::ensure(
                         JSON_ERROR_NONE,
                         json_last_error(),

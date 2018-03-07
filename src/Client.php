@@ -8,6 +8,7 @@ use TraderInteractive\Util\Arrays;
 use TraderInteractive\Util\Http;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -62,50 +63,36 @@ final class Client implements ClientInterface
     ];
 
     /**
-     * Base url of the API server
-     *
      * @var string
      */
     private $baseUrl;
 
     /**
-     * HTTP Adapter for sending request to the api
-     *
      * @var AdapterInterface
      */
     private $adapter;
 
     /**
-     * Oauth authentication implementation
-     *
      * @var Authentication
      */
     private $authentication;
 
     /**
-     * API access token
-     *
      * @var string
      */
     private $accessToken;
 
     /**
-     * API refresh token
-     *
      * @var string
      */
     private $refreshToken;
 
     /**
-     * Storage for cached API responses
-     *
      * @var CacheInterface
      */
     private $cache;
 
     /**
-     * Strategy for caching
-     *
      * @var int
      */
     private $cacheMode;
@@ -127,13 +114,13 @@ final class Client implements ClientInterface
     /**
      * Create a new instance of Client
      *
-     * @param AdapterInterface $adapter
-     * @param Authentication $authentication
-     * @param string $baseUrl
-     * @param int $cacheMode
-     * @param Cache $cache
-     * @param string $accessToken
-     * @param string $refreshToken
+     * @param AdapterInterface $adapter        HTTP Adapter for sending request to the api
+     * @param Authentication   $authentication Oauth authentication implementation
+     * @param string           $baseUrl        Base url of the API server
+     * @param int              $cacheMode      Strategy for caching
+     * @param CacheInterface   $cache          Storage for cached API responses
+     * @param string           $accessToken    API access token
+     * @param string           $refreshToken   API refresh token
      *
      * @throws \InvalidArgumentException Thrown if $baseUrl is not a non-empty string
      * @throws \InvalidArgumentException Thrown if $cacheMode is not one of the cache mode constants
@@ -463,7 +450,7 @@ final class Client implements ClientInterface
         return $key;
     }
 
-    private function getCacheKey(Request $request) : string
+    private function getCacheKey(RequestInterface $request) : string
     {
         return CacheHelper::getCacheKey($request);
     }

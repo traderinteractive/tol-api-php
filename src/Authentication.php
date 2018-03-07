@@ -33,10 +33,11 @@ final class Authentication
     /**
      * Creates a new instance of Authentication for Client Credentials grant type
      *
-     * @param string $clientId The oauth client id
-     * @param string $clientSecret The oauth client secret
-     * @param string $refreshResource The refresh token resource of the API
-     *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
+     * @param string $clientId        The oauth client id
+     * @param string $clientSecret    The oauth client secret
+     * @param string $refreshResource The refresh token resource of the API Only needed since apigee doesnt use the
+     *                                token resource that is in the oauth2 spec
+     * @param string $tokenResource   The access token resource of the API
      *
      * @return Authentication
      */
@@ -80,12 +81,13 @@ final class Authentication
     /**
      * Creates a new instance of Authentication for Owner Credentials grant type
      *
-     * @param string $clientId The oauth client id
-     * @param string $clientSecret The oauth client secret
-     * @param string $username The oauth username
-     * @param string $password The oauth password
-     * @param string $refreshResource The refresh token resource of the API
-     *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
+     * @param string $clientId        The oauth client id
+     * @param string $clientSecret    The oauth client secret
+     * @param string $username        The oauth username
+     * @param string $password        The oauth password
+     * @param string $refreshResource The refresh token resource of the API. Only needed since apigee doesnt use the
+     *                                token resource that is in the oauth2 spec
+     * @param string $tokenResource   The access token resource of the API
      *
      * @return Authentication
      */
