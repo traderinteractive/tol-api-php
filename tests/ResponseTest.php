@@ -1,18 +1,21 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
+
+use GuzzleHttp\Psr7;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Defines unit tests for the Response class
  *
- * @coversDefaultClass \DominionEnterprises\Api\Response
+ * @coversDefaultClass \TraderInteractive\Api\Response
+ * @covers ::__construct
+ * @covers ::<private>
  */
-final class ResponseTest extends \PHPUnit_Framework_TestCase
+final class ResponseTest extends TestCase
 {
     /**
      * @test
-     * @group unit
-     * @covers ::__construct
      * @covers ::getHttpCode
      */
     public function getHttpCode()
@@ -26,8 +29,6 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @group unit
-     * @covers ::__construct
      * @covers ::getResponse
      */
     public function getResponse()
@@ -41,8 +42,6 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @group unit
-     * @covers ::__construct
      * @covers ::getResponseHeaders
      */
     public function getResponseHeaders()
@@ -56,30 +55,59 @@ final class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @group unit
      * @covers ::__construct
-     * @dataProvider constructorBadData
      * @expectedException \InvalidArgumentException
      */
-    public function construct_withInvalidParameters($httpCode, $rawResponse, $rawHeaders)
+    public function constructWithInvalidHttpCode()
     {
-        $response = new Response($httpCode, $rawResponse, $rawHeaders);
+        new Response(99, [], []);
     }
 
     /**
-     * data provider
+     * @test
+     * @covers ::fromPsr7Response
      *
-     * @return array
+     * @return void
      */
-    public function constructorBadData()
+    public function fromPsr7Response()
     {
-        $body = ['doesnt' => 'matter'];
-        return [
-            // http code checks
-            ['NaN', ['doesnt' => ['matter']], $body],  // not a number
-            [99, ['doesnt' => ['matter']], $body],  // less than 100
-            [601, ['doesnt' => ['matter']], $body],  // greater than 600
-            [200, ['doesnt' => 'NOT AN ARRAY'], $body],  // header value not an array
-        ];
+        $response = Response::fromPsr7Response(
+            new Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode(['foo' => 'bar']))
+        );
+
+         $this->assertSame(200, $response->getHttpCode());
+         $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
+         $this->assertSame(['foo' => 'bar'], $response->getResponse());
+    }
+
+    /**
+     * @test
+     * @covers ::fromPsr7Response
+     *
+     * @return void
+     */
+    public function fromPsr7ResponseEmptyBody()
+    {
+        $response = Response::fromPsr7Response(
+            new Psr7\Response(200, ['Content-Type' => 'application/json'], null)
+        );
+
+         $this->assertSame(200, $response->getHttpCode());
+         $this->assertSame(['Content-Type' => ['application/json']], $response->getResponseHeaders());
+         $this->assertSame([], $response->getResponse());
+    }
+
+    /**
+     * @test
+     * @covers ::fromPsr7Response
+     * @expectedException \UnexpectedValueException
+     *
+     * @return void
+     */
+    public function fromPsr7ResponseWithInvalidJson()
+    {
+        Response::fromPsr7Response(
+            new Psr7\Response(200, ['Content-Type' => 'application/json'], '{"foo":"bar"')
+        );
     }
 }

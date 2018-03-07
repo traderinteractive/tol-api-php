@@ -1,15 +1,18 @@
 <?php
 
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util\Http;
+namespace TraderInteractive\Api;
+
+use GuzzleHttp\Psr7\Request;
+use PHPUnit\Framework\TestCase;
+use TraderInteractive\Util\Http;
 
 /**
  * Defines unit tests for the GuzzleAdapter class
  *
- * @coversDefaultClass \DominionEnterprises\Api\GuzzleAdapter
+ * @coversDefaultClass \TraderInteractive\Api\GuzzleAdapter
  * @covers ::<private>
  */
-final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
+final class GuzzleAdapterTest extends TestCase
 {
     /**
      * @test
@@ -22,7 +25,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     public function requestThrowsOnUnsupporetedMethod()
     {
         $adapter = new GuzzleAdapter();
-        $request = new Request('a resource', 'SILLY', null, []);
+        $request = new Request('SILLY', 'a resource', [], null);
         $adapter->end($adapter->start($request));
     }
 
@@ -36,9 +39,9 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     {
         $adapter = new GuzzleAdapter();
 
-        $handleOne = $adapter->start(new Request('http://www.google.com', 'GET'));
+        $handleOne = $adapter->start(new Request('GET', 'http://www.google.com'));
         $handleTwo = $adapter->start(
-            new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET')
+            new Request('GET', 'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json')
         );
 
         try {
@@ -50,7 +53,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
         }
 
         $responseTwo = $adapter->end($handleTwo);
-        $this->assertSame(200, $responseTwo->getHttpCode());
+        $this->assertSame(200, $responseTwo->getStatusCode());
     }
 
     /**
@@ -65,7 +68,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
 
         $handleOne = $adapter->start(new Request('silly://localhost', 'GET'));
         $handleTwo = $adapter->start(
-            new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET')
+            new Request('GET', 'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json')
         );
 
         try {
@@ -75,7 +78,7 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
         }
 
         $responseTwo = $adapter->end($handleTwo);
-        $this->assertSame(200, $responseTwo->getHttpCode());
+        $this->assertSame(200, $responseTwo->getStatusCode());
     }
 
     /**
@@ -93,16 +96,20 @@ final class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @covers ::end
-     * @uses \DominionEnterprises\Api\GuzzleAdapter::start
      */
     public function getHeaders()
     {
         $adapter = new GuzzleAdapter();
         $response = $adapter->end(
-            $adapter->start(new Request('https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json', 'GET'))
+            $adapter->start(
+                new Request(
+                    'GET',
+                    'https://raw.githubusercontent.com/dominionenterprises/tol-api-php/master/composer.json'
+                )
+            )
         );
 
-        foreach ($response->getResponseHeaders() as $header) {
+        foreach ($response->getHeaders() as $header) {
             $this->assertInternalType('array', $header);
         }
     }

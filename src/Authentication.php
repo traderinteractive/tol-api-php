@@ -1,8 +1,12 @@
 <?php
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util;
-use DominionEnterprises\Util\Arrays;
-use DominionEnterprises\Util\Http;
+namespace TraderInteractive\Api;
+
+use TraderInteractive\Util;
+use TraderInteractive\Util\Arrays;
+use TraderInteractive\Util\Http;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Layer for OAuth2 Authentication
@@ -14,7 +18,7 @@ final class Authentication
      *
      * @var callable
      */
-    private $_getTokenRequestFunc;
+    private $getTokenRequestFunc;
 
     /**
      * Private constructor to safeguard undeclared functions
@@ -23,34 +27,51 @@ final class Authentication
      */
     private function __construct(callable $getTokenRequestFunc)
     {
-        $this->_getTokenRequestFunc = $getTokenRequestFunc;
+        $this->getTokenRequestFunc = $getTokenRequestFunc;
     }
 
     /**
      * Creates a new instance of Authentication for Client Credentials grant type
      *
-     * @param string $clientId The oauth client id
-     * @param string $clientSecret The oauth client secret
-     * @param string $refreshResource The refresh token resource of the API
-     *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
+     * @param string $clientId        The oauth client id
+     * @param string $clientSecret    The oauth client secret
+     * @param string $refreshResource The refresh token resource of the API Only needed since apigee doesnt use the
+     *                                token resource that is in the oauth2 spec
+     * @param string $tokenResource   The access token resource of the API
      *
-     * @return \DominionEnterprises\Api\Authentication
+     * @return Authentication
      */
-    public static function createClientCredentials($clientId, $clientSecret, $refreshResource = 'token', $tokenResource = 'token')
-    {
-        Util::throwIfNotType(['string' => [$clientId, $clientSecret]], true);
-
-        $getTokenRequestFunc = function($baseUrl, $refreshToken) use ($clientId, $clientSecret, $refreshResource, $tokenResource) {
+    public static function createClientCredentials(
+        string $clientId,
+        string $clientSecret,
+        string $refreshResource = 'token',
+        string $tokenResource = 'token'
+    ) : Authentication {
+        $getTokenRequestFunc = function (
+            string $baseUrl,
+            string $refreshToken = null
+        ) use (
+            $clientId,
+            $clientSecret,
+            $refreshResource,
+            $tokenResource
+        ) {
             if ($refreshToken !== null) {
-                return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
+                return self::getRefreshTokenRequest(
+                    $baseUrl,
+                    $clientId,
+                    $clientSecret,
+                    $refreshResource,
+                    $refreshToken
+                );
             }
 
             $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
             return new Request(
-                "{$baseUrl}/{$tokenResource}",
                 'POST',
-                Http::buildQueryString($data),
-                ['Content-Type' => 'application/x-www-form-urlencoded']
+                "{$baseUrl}/{$tokenResource}",
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
             );
         };
 
@@ -60,30 +81,43 @@ final class Authentication
     /**
      * Creates a new instance of Authentication for Owner Credentials grant type
      *
-     * @param string $clientId The oauth client id
-     * @param string $clientSecret The oauth client secret
-     * @param string $username The oauth username
-     * @param string $password The oauth password
-     * @param string $refreshResource The refresh token resource of the API
-     *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
+     * @param string $clientId        The oauth client id
+     * @param string $clientSecret    The oauth client secret
+     * @param string $username        The oauth username
+     * @param string $password        The oauth password
+     * @param string $refreshResource The refresh token resource of the API. Only needed since apigee doesnt use the
+     *                                token resource that is in the oauth2 spec
+     * @param string $tokenResource   The access token resource of the API
      *
-     * @return \DominionEnterprises\Api\Authentication
+     * @return Authentication
      */
     public static function createOwnerCredentials(
-        $clientId,
-        $clientSecret,
-        $username,
-        $password,
-        $refreshResource = 'token',
-        $tokenResource = 'token'
-    )
-    {
-        Util::throwIfNotType(['string' => [$clientId, $clientSecret, $username, $password]], true);
-
-        $getTokenRequestFunc = function($baseUrl, $refreshToken)
-        use ($clientId, $clientSecret, $username, $password, $refreshResource, $tokenResource) {
+        string $clientId,
+        string $clientSecret,
+        string $username,
+        string $password,
+        string $refreshResource = 'token',
+        string $tokenResource = 'token'
+    ) : Authentication {
+        $getTokenRequestFunc = function (
+            string $baseUrl,
+            string $refreshToken = null
+        ) use (
+            $clientId,
+            $clientSecret,
+            $username,
+            $password,
+            $refreshResource,
+            $tokenResource
+        ) {
             if ($refreshToken !== null) {
-                return self::_getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken);
+                return self::getRefreshTokenRequest(
+                    $baseUrl,
+                    $clientId,
+                    $clientSecret,
+                    $refreshResource,
+                    $refreshToken
+                );
             }
 
             $data = [
@@ -94,10 +128,10 @@ final class Authentication
                 'grant_type' => 'password',
             ];
             return new Request(
-                "{$baseUrl}/{$tokenResource}",
                 'POST',
-                Http::buildQueryString($data),
-                ['Content-Type' => 'application/x-www-form-urlencoded']
+                "{$baseUrl}/{$tokenResource}",
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
             );
         };
 
@@ -107,32 +141,37 @@ final class Authentication
     /**
      * Extracts an access token from the given API response
      *
-     * @param \DominionEnterprises\Api\Response $response The API response containing the access token
+     * @param ResponseInterface $response The API response containing the access token
      *
      * @return array Array containing the access token, refresh token and expires timestamp
      */
-    public static function parseTokenResponse(Response $response)
+    public static function parseTokenResponse(ResponseInterface $response)
     {
-        $parsedJson = $response->getResponse();
+        $parsedJson = json_decode((string)$response->getBody(), true);
         Util::ensureNot('invalid_client', Arrays::get($parsedJson, 'error'), 'Invalid Credentials');
-        Util::ensure(200, $response->getHttpCode(), Arrays::get($parsedJson, 'error_description', 'Unknown API error'));
-        return [$parsedJson['access_token'], Arrays::get($parsedJson, 'refresh_token'), time() + (int)$parsedJson['expires_in']];
+        Util::ensure(
+            200,
+            $response->getStatusCode(),
+            Arrays::get($parsedJson, 'error_description', 'Unknown API error')
+        );
+        return [
+            $parsedJson['access_token'],
+            Arrays::get($parsedJson, 'refresh_token'),
+            time() + (int)$parsedJson['expires_in'],
+        ];
     }
 
     /**
      * Creates a Request object for obtaining a new token from the API
      *
-     * @param string $baseUrl The base url of the API
-     * @param string $refreshToken The refresh token of the API
+     * @param string      $baseUrl      The base url of the API
+     * @param string|null $refreshToken The refresh token of the API
      *
-     * @return \DominionEnterprises\Api\Request
+     * @return RequestInterface
      */
-    public function getTokenRequest($baseUrl, $refreshToken)
+    public function getTokenRequest(string $baseUrl, string $refreshToken = null) : RequestInterface
     {
-        Util::throwIfNotType(['string' => [$baseUrl]], true);
-        Util::throwIfNotType(['string' => [$refreshToken]], true, true);
-
-        return call_user_func($this->_getTokenRequestFunc, $baseUrl, $refreshToken);
+        return call_user_func($this->getTokenRequestFunc, $baseUrl, $refreshToken);
     }
 
     /**
@@ -145,20 +184,30 @@ final class Authentication
      *     Only needed since apigee doesnt use the token resource that is in the oauth2 spec
      * @param string $refreshToken The refresh token of the API
      *
-     * @return \DominionEnterprises\Api\Request The built token refresh request
+     * @return RequestInterface The built token refresh request
      */
-    private static function _getRefreshTokenRequest($baseUrl, $clientId, $clientSecret, $refreshResource, $refreshToken)
-    {
+    private static function getRefreshTokenRequest(
+        string $baseUrl,
+        string $clientId,
+        string $clientSecret,
+        string $refreshResource,
+        string $refreshToken
+    ) : RequestInterface {
         //NOTE client_id and client_secret are needed for Apigee but are not in the oauth2 spec
-        $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'refresh_token' => $refreshToken, 'grant_type' => 'refresh_token'];
+        $data = [
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'refresh_token' => $refreshToken,
+            'grant_type' => 'refresh_token',
+        ];
 
-        //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible in Apigee and why the
-        //$refreshResource variable exists
+        //NOTE the oauth2 spec says the refresh resource should be the same as the token resource, which is impossible
+        //in Apigee and why the $refreshResource variable exists
         return new Request(
-            "{$baseUrl}/{$refreshResource}",
             'POST',
-            Http::buildQueryString($data),
-            ['Content-Type' => 'application/x-www-form-urlencoded']
+            "{$baseUrl}/{$refreshResource}",
+            ['Content-Type' => 'application/x-www-form-urlencoded'],
+            Http::buildQueryString($data)
         );
     }
 }

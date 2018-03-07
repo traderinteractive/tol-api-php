@@ -1,7 +1,8 @@
 <?php
 
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util;
+namespace TraderInteractive\Api;
+
+use TraderInteractive\Util;
 
 /**
  * Class for iterating index responses. Collections are readonly
@@ -11,88 +12,86 @@ final class Collection implements \Iterator, \Countable
     /**
      * API Client
      *
-     * @var Client
+     * @var ClientInterface
      */
-    private $_client;
+    private $client;
 
     /**
      * limit to give to API
      *
      * @var int
      */
-    private $_limit;
+    private $limit;
 
     /**
      * offset to give to API
      *
      * @var int
      */
-    private $_offset;
+    private $offset;
 
     /**
      * resource name for collection
      *
      * @var string
      */
-    private $_resource;
+    private $resource;
 
     /**
      * array of filters to pass to API
      *
      * @var array
      */
-    private $_filters;
+    private $filters;
 
     /**
      * Total number of elements in the collection
      *
      * @var int
      */
-    private $_total;
+    private $total;
 
     /**
      * pointer in the paginated results
      *
      * @var int
      */
-    private $_position;
+    private $position;
 
     /**
      * A paginated set of elements from the API
      *
-     * @var array
+     * @var array|null
      */
-    private $_result;
+    private $result;
 
     /**
      * Create a new collection
      *
-     * @param Client $client client connection to the API
-     * @param string $resource name of API resource to request
-     * @param array $filters key value pair array of search filters
+     * @param ClientInterface $client   Configured client connection to the API.
+     * @param string          $resource The name of API resource to request.
+     * @param array           $filters  A key value pair array of search filters.
      */
-    public function __construct(Client $client, $resource, array $filters = [])
+    public function __construct(ClientInterface $client, string $resource, array $filters = [])
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
-
-        $this->_client = $client;
-        $this->_resource = $resource;
-        $this->_filters = $filters;
+        $this->client = $client;
+        $this->resource = $resource;
+        $this->filters = $filters;
         $this->rewind();
     }
 
     /**
      * @see Countable::count()
      *
-     * @return int
+     * @return integer
      */
-    public function count()
+    public function count() : int
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        return $this->_total;
+        return $this->total;
     }
 
     /**
@@ -102,27 +101,27 @@ final class Collection implements \Iterator, \Countable
      */
     public function rewind()
     {
-        $this->_result = null;
-        $this->_offset = 0;
-        $this->_total = 0;
-        $this->_limit = 0;
-        $this->_position = -1;
+        $this->result = null;
+        $this->offset = 0;
+        $this->total = 0;
+        $this->limit = 0;
+        $this->position = -1;
     }
 
     /**
      * @see Iterator::key()
      *
-     * @return int
+     * @return integer
      */
-    public function key()
+    public function key() : int
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        Util::ensure(false, empty($this->_result), '\OutOfBoundsException', ['Collection contains no elements']);
+        Util::ensure(false, empty($this->result), '\OutOfBoundsException', ['Collection contains no elements']);
 
-        return $this->_offset + $this->_position;
+        return $this->offset + $this->position;
     }
 
     /**
@@ -130,13 +129,13 @@ final class Collection implements \Iterator, \Countable
      *
      * @return bool
      */
-    public function valid()
+    public function valid() : bool
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
-        return $this->_offset + $this->_position < $this->_total;
+        return $this->offset + $this->position < $this->total;
     }
 
     /**
@@ -146,24 +145,24 @@ final class Collection implements \Iterator, \Countable
      */
     public function next()
     {
-        ++$this->_position;
+        ++$this->position;
 
-        if ($this->_position < $this->_limit) {
+        if ($this->position < $this->limit) {
             return;
         }
 
-        $this->_offset += $this->_limit;
-        $this->_filters['offset'] = $this->_offset;
-        $indexResponse = $this->_client->index($this->_resource, $this->_filters);
+        $this->offset += $this->limit;
+        $this->filters['offset'] = $this->offset;
+        $indexResponse = $this->client->index($this->resource, $this->filters);
 
         $httpCode = $indexResponse->getHttpCode();
         Util::ensure(200, $httpCode, "Did not receive 200 from API. Instead received {$httpCode}");
 
         $response = $indexResponse->getResponse();
-        $this->_limit = $response['pagination']['limit'];
-        $this->_total = $response['pagination']['total'];
-        $this->_result = $response['result'];
-        $this->_position = 0;
+        $this->limit = $response['pagination']['limit'];
+        $this->total = $response['pagination']['total'];
+        $this->result = $response['result'];
+        $this->position = 0;
     }
 
     /**
@@ -171,20 +170,20 @@ final class Collection implements \Iterator, \Countable
      *
      * @return array
      */
-    public function current()
+    public function current() : array
     {
-        if ($this->_position === -1) {
+        if ($this->position === -1) {
             $this->next();
         }
 
         Util::ensure(
             true,
-            array_key_exists($this->_position, $this->_result),
+            array_key_exists($this->position, $this->result),
             '\OutOfBoundsException',
             ['Collection contains no element at current position']
         );
 
-        return $this->_result[$this->_position];
+        return $this->result[$this->position];
     }
 
     /**
@@ -192,9 +191,9 @@ final class Collection implements \Iterator, \Countable
      *
      * @param string $key The name of the field for which the values will be returned.
      *
-     * @return iterable
+     * @return \Iterator
      */
-    public function column($key)
+    public function column(string $key) : \Iterator
     {
         foreach ($this as $item) {
             yield Util\Arrays::get($item, $key);
@@ -208,7 +207,7 @@ final class Collection implements \Iterator, \Countable
      *
      * @return \Generator
      */
-    public function select(array $keys)
+    public function select(array $keys) : \Iterator
     {
         foreach ($this as $item) {
             $result = array_fill_keys($keys, null);

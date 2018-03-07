@@ -1,83 +1,112 @@
 <?php
 
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util;
+namespace TraderInteractive\Api;
+
+use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
+use UnexpectedValueException;
 
 /**
- * Represents a response to an API request
+ * Immutable representation of a response to an API request.
  */
 final class Response
 {
     /**
-     * The http status of the response.
-     *
-     * @var int
+     * @var integer
      */
-    private $_httpCode;
+    private $httpCode;
 
     /**
-     * The response from the API
-     *
      * @var array
      */
-    private $_body;
+    private $headers;
 
     /**
-     * A array of headers received with the response.
-     *
-     * @var array array where each header key has an array of values
+     * @var array
      */
-    private $_headers;
+    private $body;
 
     /**
      * Create a new instance of Response
      *
-     * @param int $httpCode
-     * @param array $headers
-     * @param array $body
+     * @param int   $httpCode The http status of the response.
+     * @param array $headers  An array where each header key has an array of values
+     * @param array $body    The response from the API
      *
-     * @throws \InvalidArgumentException Throw if $httpCode is not an integer between 100 and 600
+     * @throws InvalidArgumentException Throw if $httpCode is not an integer between 100 and 600
      */
-    public function __construct($httpCode, array $headers, array $body = [])
+    public function __construct(int $httpCode = 300, array $headers = [], array $body = [])
     {
-        Util::throwIfNotType(['int' => $httpCode, 'array' => $headers]);
-
         if ($httpCode < 100 || $httpCode > 600) {
-            throw new \InvalidArgumentException('$httpCode must be an integer >= 100 and <= 600');
+            throw new InvalidArgumentException('$httpCode must be an integer >= 100 and <= 600');
         }
 
-        $this->_httpCode = $httpCode;
-        $this->_headers = $headers;
-        $this->_body = $body;
+        $this->httpCode = $httpCode;
+        $this->headers = $headers;
+        $this->body = $body;
     }
 
     /**
-     * Returns the HTTP status code of the response
+     * Returns the HTTP status code of the response.
      *
-     * @return int
+     * @return integer
      */
-    public function getHttpCode()
+    public function getHttpCode() : int
     {
-        return $this->_httpCode;
+        return $this->httpCode;
     }
 
     /**
-     * Returns an array representing the response from the API
+     * Returns an array representing the response from the API.
      *
      * @return array
      */
-    public function getResponse()
+    public function getResponse() : array
     {
-        return $this->_body;
+        return $this->body;
     }
 
     /**
-     * Returns the parsed response headers from the API
+     * Returns the parsed response headers from the API.
      *
-     * @return array array where each header key has an array of values
+     * @return array Array where each header key has an array of values.
      */
-    public function getResponseHeaders()
+    public function getResponseHeaders() : array
     {
-        return $this->_headers;
+        return $this->headers;
+    }
+
+    public static function fromPsr7Response(ResponseInterface $response) : Response
+    {
+        return new self(
+            $response->getStatusCode(),
+            $response->getHeaders(),
+            self::decodeBody($response->getBody())
+        );
+    }
+
+    private static function decodeBody(string $json) : array
+    {
+        if (trim($json) == '') {
+            return [];
+        }
+
+        try {
+            return json_decode($json, true);
+        } finally {
+            self::ensureJson();
+        }
+    }//@codeCoverageIgnore Unreachable line
+
+    private static function ensureJson()
+    {
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new UnexpectedValueException(
+                sprintf(
+                    'Could not parse response body. Error: %s',
+                    json_last_error_msg()
+                )
+            );
+        }
     }
 }

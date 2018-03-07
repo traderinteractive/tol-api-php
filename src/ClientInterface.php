@@ -1,5 +1,5 @@
 <?php
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 /**
  * Client for apis
@@ -11,7 +11,7 @@ interface ClientInterface
      *
      * @return array two string values, access token and refresh token
      */
-    function getTokens();
+    public function getTokens() : array;
 
     /**
      * Search the API resource using the specified $filters
@@ -19,14 +19,14 @@ interface ClientInterface
      * @param string $resource
      * @param array $filters
      *
-     * @return mixed opaque handle to be given to endIndex()
+     * @return string opaque handle to be given to endIndex()
      */
-    function startIndex($resource, array $filters = []);
+    public function startIndex(string $resource, array $filters = []) : string;
 
     /**
      * @see startIndex()
      */
-    function index($resource, array $filters = []);
+    public function index(string $resource, array $filters = []) : Response;
 
     /**
      * Get the details of an API resource based on $id
@@ -35,14 +35,14 @@ interface ClientInterface
      * @param string $id
      * @param array  $parameters
      *
-     * @return mixed opaque handle to be given to endGet()
+     * @return string opaque handle to be given to endGet()
      */
-    function startGet($resource, $id, array $parameters = []);
+    public function startGet(string $resource, string $id, array $parameters = []) : string;
 
     /**
      * @see startGet()
      */
-    function get($resource, $id, array $parameters = []);
+    public function get(string $resource, string $id, array $parameters = []) : Response;
 
     /**
      * Create a new instance of an API resource using the provided $data
@@ -50,14 +50,14 @@ interface ClientInterface
      * @param string $resource
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPost()
+     * @return string opaque handle to be given to endPost()
      */
-    function startPost($resource, array $data);
+    public function startPost(string $resource, array $data) : string;
 
     /**
      * @see startPost()
      */
-    function post($resource, array $data);
+    public function post(string $resource, array $data) : Response;
 
     /**
      * Update an existing instance of an API resource specified by $id with the provided $data
@@ -66,14 +66,14 @@ interface ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPut()
+     * @return string opaque handle to be given to endPut()
      */
-    function startPut($resource, $id, array $data);
+    public function startPut(string $resource, string $id, array $data) : string;
 
     /**
      * @see startPut()
      */
-    function put($resource, $id, array $data);
+    public function put(string $resource, string $id, array $data) : Response;
 
     /**
      * Delete an existing instance of an API resource specified by $id
@@ -82,23 +82,23 @@ interface ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endDelete()
+     * @return string opaque handle to be given to endDelete()
      */
-    function startDelete($resource, $id = null, array $data = null);
+    public function startDelete(string $resource, string $id = null, array $data = null) : string;
 
     /**
      * @see startDelete()
      */
-    function delete($resource, $id = null, array $data = null);
+    public function delete(string $resource, string $id = null, array $data = null) : Response;
 
     /**
      * Get response of start*() method
      *
-     * @param mixed $handle opaque handle from start*()
+     * @param string $handle opaque handle from start*()
      *
      * @return Response
      */
-    function end($handle);
+    public function end(string $handle) : Response;
 
     /**
      * Set the default headers
@@ -107,5 +107,5 @@ interface ClientInterface
      *
      * @return void
      */
-    function setDefaultHeaders($defaultHeaders);
+    public function setDefaultHeaders(array $defaultHeaders);
 }

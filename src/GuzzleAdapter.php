@@ -1,48 +1,51 @@
 <?php
 
-namespace DominionEnterprises\Api;
+namespace TraderInteractive\Api;
 
 use ArrayObject;
-use DominionEnterprises\Util;
+use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Concrete implentation of Adapter interface
  */
-final class GuzzleAdapter implements Adapter
+final class GuzzleAdapter implements AdapterInterface
 {
     /**
      * Collection of Promise\PromiseInterface instances with keys matching what was given from start().
      *
      * @var array
      */
-    private $_promises = [];
+    private $promises = [];
 
     /**
      * Collection of Api\Response with keys matching what was given from start().
      *
      * @var array
      */
-    private $_responses = [];
+    private $responses = [];
 
     /**
      * Collection of \Exception with keys matching what was given from start().
      *
-     * @var array
+     * @var ArrayObject
      */
-    private $_exceptions = [];
+    private $exceptions;
 
     /**
-     * @var \Guzzle\Http\Client
+     * @var GuzzleClientInterface
      */
-    private $_client;
+    private $client;
 
-    public function __construct()
+    public function __construct(GuzzleClientInterface $client = null)
     {
-        $this->_client = new GuzzleClient(
+        $this->exceptions = new ArrayObject();
+        $this->client = $client ?? new GuzzleClient(
             [
                 'allow_redirects' => false, //stop guzzle from following redirects
                 'http_errors' => false, //only for 400/500 error codes, actual exceptions can still happen
@@ -51,20 +54,12 @@ final class GuzzleAdapter implements Adapter
     }
 
     /**
-     * @see Adapter::start()
+     * @see AdapterInterface::start()
      */
-    public function start(Request $request)
+    public function start(RequestInterface $request) : string
     {
         $handle = uniqid();
-        $this->_promises[$handle] = $this->_client->requestAsync(
-            $request->getMethod(),
-            $request->getUrl(),
-            [
-                'headers' => $request->getHeaders(),
-                'body' => $request->getBody(),
-            ]
-        );
-
+        $this->promises[$handle] = $this->client->sendAsync($request);
         return $handle;
     }
 
@@ -73,15 +68,14 @@ final class GuzzleAdapter implements Adapter
      *
      * @throws \InvalidArgumentException
      */
-    public function end($endHandle)
+    public function end(string $endHandle) : ResponseInterface
     {
-        $results = $this->fulfillPromises($this->_promises, $this->_exceptions);
+        $results = $this->fulfillPromises($this->promises, $this->exceptions);
         foreach ($results as $handle => $response) {
             try {
-                $body = []; //default to empty body
                 $contents = (string)$response->getBody();
                 if (trim($contents) !== '') {
-                    $body = json_decode($contents, true);
+                    json_decode($contents, true);
                     Util::ensure(
                         JSON_ERROR_NONE,
                         json_last_error(),
@@ -90,23 +84,23 @@ final class GuzzleAdapter implements Adapter
                     );
                 }
 
-                $this->_responses[$handle] = new Response($response->getStatusCode(), $response->getHeaders(), $body);
+                $this->responses[$handle] = $response;
             } catch (\Exception $e) {
-                $this->_exceptions[$handle] = $e;
+                $this->exceptions[$handle] = $e;
             }
         }
 
-        $this->_promises = [];
+        $this->promises = [];
 
-        if (array_key_exists($endHandle, $this->_exceptions)) {
-            $exception = $this->_exceptions[$endHandle];
-            unset($this->_exceptions[$endHandle]);
+        if (array_key_exists($endHandle, $this->exceptions)) {
+            $exception = $this->exceptions[$endHandle];
+            unset($this->exceptions[$endHandle]);
             throw $exception;
         }
 
-        if (array_key_exists($endHandle, $this->_responses)) {
-            $response = $this->_responses[$endHandle];
-            unset($this->_responses[$endHandle]);
+        if (array_key_exists($endHandle, $this->responses)) {
+            $response = $this->responses[$endHandle];
+            unset($this->responses[$endHandle]);
             return $response;
         }
 
@@ -121,23 +115,23 @@ final class GuzzleAdapter implements Adapter
      *
      * @return array Array of fulfilled PSR7 responses.
      */
-    private function fulfillPromises(array $promises, array &$exceptions)
+    private function fulfillPromises(array $promises, ArrayObject $exceptions) : array
     {
         if (empty($promises)) {
             return [];
         }
 
-        $results = [];
+        $results = new ArrayObject();
         Promise\each(
-            $this->_promises,
-            function (ResponseInterface $response, $index) use (&$results) {
+            $this->promises,
+            function (ResponseInterface $response, $index) use ($results) {
                 $results[$index] = $response;
             },
-            function (RequestException $e, $index) use (&$exceptions) {
+            function (RequestException $e, $index) use ($exceptions) {
                 $exceptions[$index] = $e;
             }
         )->wait();
 
-        return $results;
+        return $results->getArrayCopy();
     }
 }

@@ -1,9 +1,15 @@
 <?php
 
-namespace DominionEnterprises\Api;
-use DominionEnterprises\Util;
-use DominionEnterprises\Util\Arrays;
-use DominionEnterprises\Util\Http;
+namespace TraderInteractive\Api;
+
+use Chadicus\Psr\SimpleCache\NullCache;
+use TraderInteractive\Util;
+use TraderInteractive\Util\Arrays;
+use TraderInteractive\Util\Http;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * Client for apis
@@ -46,116 +52,102 @@ final class Client implements ClientInterface
     const CACHE_MODE_REFRESH = 4;
 
     /**
-     * Base url of the API server
-     *
+     * @var array
+     */
+    const CACHE_MODES = [
+        self::CACHE_MODE_NONE,
+        self::CACHE_MODE_GET,
+        self::CACHE_MODE_TOKEN,
+        self::CACHE_MODE_ALL,
+        self::CACHE_MODE_REFRESH,
+    ];
+
+    /**
      * @var string
      */
-    private $_baseUrl;
+    private $baseUrl;
 
     /**
-     * HTTP Adapter for sending request to the api
-     *
-     * @var Adapter
+     * @var AdapterInterface
      */
-    private $_adapter;
+    private $adapter;
 
     /**
-     * Oauth authentication implementation
-     *
      * @var Authentication
      */
-    private $_authentication;
+    private $authentication;
 
     /**
-     * API access token
-     *
      * @var string
      */
-    private $_accessToken;
+    private $accessToken;
 
     /**
-     * API refresh token
-     *
      * @var string
      */
-    private $_refreshToken;
+    private $refreshToken;
 
     /**
-     * Storage for cached API responses
-     *
-     * @var Cache
+     * @var CacheInterface
      */
-    private $_cache;
+    private $cache;
 
     /**
-     * Strategy for caching
-     *
      * @var int
      */
-    private $_cacheMode;
+    private $cacheMode;
 
     /**
-     * Handles set in _start()
+     * Handles set in start()
      *
      * @var array like [opaqueKey => [cached response (Response), adapter handle (opaque), Request]]
      */
-    private $_handles = [];
+    private $handles = [];
 
     /**
      * Array of headers that are passed on every request unless they are overridden
      *
      * @var array
      */
-    private $_defaultHeaders = [];
+    private $defaultHeaders = [];
 
     /**
      * Create a new instance of Client
      *
-     * @param Adapter $adapter
-     * @param Authentication $authentication
-     * @param string $baseUrl
-     * @param int $cacheMode
-     * @param Cache $cache
-     * @param string $accessToken
-     * @param string $refreshToken
+     * @param AdapterInterface $adapter        HTTP Adapter for sending request to the api
+     * @param Authentication   $authentication Oauth authentication implementation
+     * @param string           $baseUrl        Base url of the API server
+     * @param int              $cacheMode      Strategy for caching
+     * @param CacheInterface   $cache          Storage for cached API responses
+     * @param string           $accessToken    API access token
+     * @param string           $refreshToken   API refresh token
      *
      * @throws \InvalidArgumentException Thrown if $baseUrl is not a non-empty string
      * @throws \InvalidArgumentException Thrown if $cacheMode is not one of the cache mode constants
      */
     public function __construct(
-        Adapter $adapter,
+        AdapterInterface $adapter,
         Authentication $authentication,
-        $baseUrl,
-        $cacheMode = self::CACHE_MODE_NONE,
-        Cache $cache = null,
-        $accessToken = null,
-        $refreshToken = null
-    )
-    {
-        Util::throwIfNotType(['string' => [$baseUrl]], true);
-        Util::throwIfNotType(['string' => [$accessToken, $refreshToken]], true, true);
+        string $baseUrl,
+        int $cacheMode = self::CACHE_MODE_NONE,
+        CacheInterface $cache = null,
+        string $accessToken = null,
+        string $refreshToken = null
+    ) {
         Util::ensure(
             true,
-            in_array(
-                $cacheMode,
-                [self::CACHE_MODE_NONE, self::CACHE_MODE_GET, self::CACHE_MODE_TOKEN, self::CACHE_MODE_ALL, self::CACHE_MODE_REFRESH],
-                true
-            ),
+            in_array($cacheMode, self::CACHE_MODES, true),
             '\InvalidArgumentException',
             ['$cacheMode must be a valid cache mode constant']
         );
 
-        if ($cacheMode !== self::CACHE_MODE_NONE) {
-            Util::ensureNot(null, $cache, '\InvalidArgumentException', ['$cache must not be null if $cacheMode is not CACHE_MODE_NONE']);
-        }
-
-        $this->_adapter = $adapter;
-        $this->_baseUrl = $baseUrl;
-        $this->_authentication = $authentication;
-        $this->_cache = $cache;
-        $this->_cacheMode = $cacheMode;
-        $this->_accessToken = $accessToken;
-        $this->_refreshToken = $refreshToken;
+        $this->adapter = $adapter;
+        $this->baseUrl = $baseUrl;
+        $this->authentication = $authentication;
+        $this->cache = $cache ?? new NullCache();
+        $this->cacheMode = $cacheMode;
+        $this->accessToken = $accessToken;
+        $this->refreshToken = $refreshToken;
     }
 
     /**
@@ -163,9 +155,9 @@ final class Client implements ClientInterface
      *
      * @return array two string values, access token and refresh token
      */
-    public function getTokens()
+    public function getTokens() : array
     {
-        return [$this->_accessToken, $this->_refreshToken];
+        return [$this->accessToken, $this->refreshToken];
     }
 
     /**
@@ -174,19 +166,18 @@ final class Client implements ClientInterface
      * @param string $resource
      * @param array $filters
      *
-     * @return mixed opaque handle to be given to endIndex()
+     * @return string opaque handle to be given to endIndex()
      */
-    public function startIndex($resource, array $filters = [])
+    public function startIndex(string $resource, array $filters = []) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource) . '?' . Http::buildQueryString($filters);
-        return $this->_start($url, 'GET');
+        $url = "{$this->baseUrl}/" . urlencode($resource) . '?' . Http::buildQueryString($filters);
+        return $this->start($url, 'GET');
     }
 
     /**
      * @see startIndex()
      */
-    public function index($resource, array $filters = [])
+    public function index(string $resource, array $filters = []) : Response
     {
         return $this->end($this->startIndex($resource, $filters));
     }
@@ -198,23 +189,22 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array  $parameters
      *
-     * @return mixed opaque handle to be given to endGet()
+     * @return string opaque handle to be given to endGet()
      */
-    public function startGet($resource, $id, array $parameters = [])
+    public function startGet(string $resource, string $id, array $parameters = []) : string
     {
-        Util::throwIfNotType(['string' => [$resource, $id]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
+        $url = "{$this->baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
         if (!empty($parameters)) {
             $url .= '?' . Http::buildQueryString($parameters);
         }
 
-        return $this->_start($url, 'GET');
+        return $this->start($url, 'GET');
     }
 
     /**
      * @see startGet()
      */
-    public function get($resource, $id, array $parameters = [])
+    public function get(string $resource, string $id, array $parameters = []) : Response
     {
         return $this->end($this->startGet($resource, $id, $parameters));
     }
@@ -225,19 +215,18 @@ final class Client implements ClientInterface
      * @param string $resource
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPost()
+     * @return string opaque handle to be given to endPost()
      */
-    public function startPost($resource, array $data)
+    public function startPost(string $resource, array $data) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource);
-        return $this->_start($url, 'POST', json_encode($data), ['Content-Type' => 'application/json']);
+        $url = "{$this->baseUrl}/" . urlencode($resource);
+        return $this->start($url, 'POST', json_encode($data), ['Content-Type' => 'application/json']);
     }
 
     /**
      * @see startPost()
      */
-    public function post($resource, array $data)
+    public function post(string $resource, array $data) : Response
     {
         return $this->end($this->startPost($resource, $data));
     }
@@ -249,19 +238,18 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endPut()
+     * @return string opaque handle to be given to endPut()
      */
-    public function startPut($resource, $id, array $data)
+    public function startPut(string $resource, string $id, array $data) : string
     {
-        Util::throwIfNotType(['string' => [$resource, $id]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
-        return $this->_start($url, 'PUT', json_encode($data), ['Content-Type' => 'application/json']);
+        $url = "{$this->baseUrl}/" . urlencode($resource) . '/' . urlencode($id);
+        return $this->start($url, 'PUT', json_encode($data), ['Content-Type' => 'application/json']);
     }
 
     /**
      * @see startPut()
      */
-    public function put($resource, $id, array $data)
+    public function put(string $resource, string $id, array $data) : Response
     {
         return $this->end($this->startPut($resource, $id, $data));
     }
@@ -273,25 +261,23 @@ final class Client implements ClientInterface
      * @param string $id
      * @param array $data
      *
-     * @return mixed opaque handle to be given to endDelete()
+     * @return string opaque handle to be given to endDelete()
      */
-    public function startDelete($resource, $id = null, array $data = null)
+    public function startDelete(string $resource, string $id = null, array $data = null) : string
     {
-        Util::throwIfNotType(['string' => [$resource]], true);
-        $url = "{$this->_baseUrl}/" . urlencode($resource);
+        $url = "{$this->baseUrl}/" . urlencode($resource);
         if ($id !== null) {
-            Util::throwIfNotType(['string' => [$id]], true);
             $url .= '/' . urlencode($id);
         }
 
         $json = $data !== null ? json_encode($data) : null;
-        return $this->_start($url, 'DELETE', $json, ['Content-Type' => 'application/json']);
+        return $this->start($url, 'DELETE', $json, ['Content-Type' => 'application/json']);
     }
 
     /**
      * @see startDelete()
      */
-    public function delete($resource, $id = null, array $data = null)
+    public function delete(string $resource, string $id = null, array $data = null) : Response
     {
         return $this->end($this->startDelete($resource, $id, $data));
     }
@@ -299,36 +285,48 @@ final class Client implements ClientInterface
     /**
      * Get response of start*() method
      *
-     * @param mixed $handle opaque handle from start*()
+     * @param string $handle opaque handle from start*()
      *
      * @return Response
      */
-    public function end($handle)
+    public function end(string $handle) : Response
     {
-        Util::ensure(true, array_key_exists($handle, $this->_handles), '\InvalidArgumentException', ['$handle not found']);
+        Util::ensure(
+            true,
+            array_key_exists($handle, $this->handles),
+            '\InvalidArgumentException',
+            ['$handle not found']
+        );
 
-        list($cachedResponse, $adapterHandle, $request) = $this->_handles[$handle];
-        unset($this->_handles[$handle]);
+        list($cachedResponse, $adapterHandle, $request) = $this->handles[$handle];
+        unset($this->handles[$handle]);
 
         if ($cachedResponse !== null) {
-            return $cachedResponse;
+            return Response::fromPsr7Response($cachedResponse);
         }
 
-        $response = $this->_adapter->end($adapterHandle);
+        $response = $this->adapter->end($adapterHandle);
 
-        if (self::_isExpiredToken($response)) {
-            $this->_refreshAccessToken();
+        if (self::isExpiredToken($response)) {
+            $this->refreshAccessToken();
             $headers = $request->getHeaders();
-            $headers['Authorization'] = "Bearer {$this->_accessToken}";
-            $request = new Request($request->getUrl(), $request->getMethod(), $request->getBody(), $headers);
-            $response = $this->_adapter->end($this->_adapter->start($request));
+            $headers['Authorization'] = "Bearer {$this->accessToken}";
+            $request = new Request(
+                $request->getMethod(),
+                $request->getUri(),
+                $headers,
+                $request->getBody()
+            );
+            $response = $this->adapter->end($this->adapter->start($request));
         }
 
-        if (($this->_cacheMode === self::CACHE_MODE_REFRESH || $this->_cacheMode & self::CACHE_MODE_GET) && $request->getMethod() === 'GET') {
-            $this->_cache->set($request, $response);
+        if (($this->cacheMode === self::CACHE_MODE_REFRESH
+                || $this->cacheMode & self::CACHE_MODE_GET)
+                && $request->getMethod() === 'GET') {
+            $this->cache->set($this->getCacheKey($request), $response);
         }
 
-        return $response;
+        return Response::fromPsr7Response($response);
     }
 
     /**
@@ -338,18 +336,18 @@ final class Client implements ClientInterface
      *
      * @return void
      */
-    public function setDefaultHeaders($defaultHeaders)
+    public function setDefaultHeaders(array $defaultHeaders)
     {
-        $this->_defaultHeaders = $defaultHeaders;
+        $this->defaultHeaders = $defaultHeaders;
     }
 
-    private static function _isExpiredToken(Response $response)
+    private static function isExpiredToken(ResponseInterface $response) : bool
     {
-        if ($response->getHttpCode() !== 401) {
+        if ($response->getStatusCode() !== 401) {
             return false;
         }
 
-        $parsedJson = $response->getResponse();
+        $parsedJson = json_decode((string)$response->getBody(), true);
         $error = Arrays::get($parsedJson, 'error');
 
         if (is_array($error)) {
@@ -376,15 +374,16 @@ final class Client implements ClientInterface
      *
      * @return void
      */
-    private function _refreshAccessToken()
+    private function refreshAccessToken()
     {
-        $request = $this->_authentication->getTokenRequest($this->_baseUrl, $this->_refreshToken);
-        $response = $this->_adapter->end($this->_adapter->start($request));
+        $request = $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken);
+        $response = $this->adapter->end($this->adapter->start($request));
 
-        list($this->_accessToken, $this->_refreshToken, $expires) = Authentication::parseTokenResponse($response);
+        list($this->accessToken, $this->refreshToken, $expires) = Authentication::parseTokenResponse($response);
 
-        if ($this->_cache === self::CACHE_MODE_REFRESH || $this->_cacheMode & self::CACHE_MODE_TOKEN) {
-            $this->_cache->set($request, $response, $expires);
+        if ($this->cache === self::CACHE_MODE_REFRESH || $this->cacheMode & self::CACHE_MODE_TOKEN) {
+            $this->cache->set($this->getCacheKey($request), $response, $expires);
+            return;
         }
     }
 
@@ -393,20 +392,20 @@ final class Client implements ClientInterface
      *
      * @return void
      */
-    private function _setTokenFromCache()
+    private function setTokenFromCache()
     {
-        if (($this->_cacheMode & self::CACHE_MODE_TOKEN) === 0) {
+        if (($this->cacheMode & self::CACHE_MODE_TOKEN) === 0) {
             return;
         }
 
-        $cachedResponse = $this->_cache->get(
-            $this->_authentication->getTokenRequest($this->_baseUrl, $this->_refreshToken)
+        $cachedResponse = $this->cache->get(
+            $this->getCacheKey($this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken))
         );
         if ($cachedResponse === null) {
             return;
         }
 
-        list($this->_accessToken, $this->_refreshToken, ) = Authentication::parseTokenResponse($cachedResponse);
+        list($this->accessToken, $this->refreshToken, ) = Authentication::parseTokenResponse($cachedResponse);
     }
 
     /**
@@ -415,38 +414,44 @@ final class Client implements ClientInterface
      * @param string $url
      * @param string $method
      * @param string|null $body
-     * @param array $headers Authorization key will be overwritten with the bearer token, and Accept-Encoding wil be overwritten with gzip.
+     * @param array $headers Authorization key will be overwritten with the bearer token, and Accept-Encoding wil be
+     *                       overwritten with gzip.
      *
-     * @return mixed opaque handle to be given to end()
+     * @return string opaque handle to be given to end()
      */
-    private function _start($url, $method, $body = null, array $headers = [])
+    private function start(string $url, string $method, string $body = null, array $headers = [])
     {
-        $headers += $this->_defaultHeaders;
+        $headers += $this->defaultHeaders;
         $headers['Accept-Encoding'] = 'gzip';
-        if ($this->_accessToken === null) {
-            $this->_setTokenFromCache();
+        if ($this->accessToken === null) {
+            $this->setTokenFromCache();
         }
 
-        if ($this->_accessToken === null) {
-            $this->_refreshAccessToken();
+        if ($this->accessToken === null) {
+            $this->refreshAccessToken();
         }
 
-        $headers['Authorization'] = "Bearer {$this->_accessToken}";
+        $headers['Authorization'] = "Bearer {$this->accessToken}";
 
-        $request = new Request($url, $method, $body, $headers);
+        $request = new Request($method, $url, $headers, $body);
 
-        if ($request->getMethod() === 'GET' && $this->_cacheMode & self::CACHE_MODE_GET) {
-            $cached = $this->_cache->get($request);
+        if ($request->getMethod() === 'GET' && $this->cacheMode & self::CACHE_MODE_GET) {
+            $cached = $this->cache->get($this->getCacheKey($request));
             if ($cached !== null) {
-                //The response is cache. Generate a key for the _handles array
+                //The response is cache. Generate a key for the handles array
                 $key = uniqid();
-                $this->_handles[$key] = [$cached, null, $request];
+                $this->handles[$key] = [$cached, null, $request];
                 return $key;
             }
         }
 
-        $key = $this->_adapter->start($request);
-        $this->_handles[$key] = [null, $key, $request];
+        $key = $this->adapter->start($request);
+        $this->handles[$key] = [null, $key, $request];
         return $key;
+    }
+
+    private function getCacheKey(RequestInterface $request) : string
+    {
+        return CacheHelper::getCacheKey($request);
     }
 }
