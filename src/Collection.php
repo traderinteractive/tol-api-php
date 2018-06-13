@@ -156,7 +156,12 @@ final class Collection implements \Iterator, \Countable
         $indexResponse = $this->client->index($this->resource, $this->filters);
 
         $httpCode = $indexResponse->getHttpCode();
-        Util::ensure(200, $httpCode, "Did not receive 200 from API. Instead received {$httpCode}");
+        Util::ensure(
+            200,
+            $httpCode,
+            Exception::class,
+            ["Did not receive 200 from API. Instead received {$httpCode}", $indexResponse]
+        );
 
         $response = $indexResponse->getResponse();
         $this->limit = $response['pagination']['limit'];

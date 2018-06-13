@@ -20,8 +20,8 @@ final class CacheHelperTest extends TestCase
     {
         $request = new Psr7\Request('GET', 'http://localhost:8080/id', []);
         $this->assertSame(
-           'GET|http_COLON__FSLASH__FSLASH_localhost_COLON_8080_FSLASH_id|',
-           CacheHelper::getCacheKey($request)
+            'GET|http_COLON__FSLASH__FSLASH_localhost_COLON_8080_FSLASH_id|',
+            CacheHelper::getCacheKey($request)
         );
     }
 }
