@@ -9,7 +9,7 @@ tools:
     php_mess_detector: true
     php_code_sniffer:
         config:
-            standard: PSR1
+            standard: PSR2
     sensiolabs_security_checker: true
     php_loc:
         excluded_dirs:
