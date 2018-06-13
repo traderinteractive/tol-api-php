@@ -300,6 +300,44 @@ final class CollectionTest extends TestCase
         );
     }
 
+    /**
+     * @test
+     * @covers ::next
+     */
+    public function collectionThrowsApiExceptionWith400Response()
+    {
+        $response = new Response(400, ['Content-Type' => ['application/json']], []);
+        $mockClient = $this->getMockBuilder(ClientInterface::class)->getMock();
+        $mockClient->method('index')->willReturn($response);
+        $collection = new Collection($mockClient, 'basic', []);
+        try {
+            $collection->next();
+            $this->fail('No Exception throw');
+        } catch (Exception $e) {
+            $this->assertSame('Did not receive 200 from API. Instead received 400', $e->getMessage());
+            $this->assertSame($response, $e->getResponse());
+        }
+    }
+
+    /**
+     * @test
+     * @covers ::next
+     */
+    public function collectionThrowsApiExceptionWith500Response()
+    {
+        $response = new Response(500, ['Content-Type' => ['application/json']], []);
+        $mockClient = $this->getMockBuilder(ClientInterface::class)->getMock();
+        $mockClient->method('index')->willReturn($response);
+        $collection = new Collection($mockClient, 'basic', []);
+        try {
+            $collection->next();
+            $this->fail('No Exception throw');
+        } catch (Exception $e) {
+            $this->assertSame('Did not receive 200 from API. Instead received 500', $e->getMessage());
+            $this->assertSame($response, $e->getResponse());
+        }
+    }
+
     private function getClient(array $items = self::DEFAULT_RESULT_SET) : ClientInterface
     {
         $callback = function (string $resource, array $filters) use ($items) {
