@@ -608,6 +608,38 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * @test
+     * @covers ::send
+     * @covers ::startSend
+     */
+    public function send()
+    {
+        $test = $this;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use ($test) {
+                if (substr($request->getUri(), -5) === 'token') {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'a token', 'expires_in' => 1])
+                    );
+                }
+
+                $test->assertSame('PATCH', $request->getMethod());
+                $test->assertSame('baseUrl/v1/item-logs/123/log-error', (string)$request->getUri());
+                $test->assertSame('{"message":"the message"}', (string)$request->getBody());
+                return new Psr7Response(204);
+            }
+        );
+
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl/v1');
+
+        $response = $client->send('PATCH', 'item-logs/123/log-error', ['message' => 'the message']);
+        $this->assertSame(204, $response->getHttpCode());
+        $this->assertSame([], $response->getResponse());
+    }
+
+    /**
      * Verify behavior of startDelete when no id is given.
      *
      * @test
