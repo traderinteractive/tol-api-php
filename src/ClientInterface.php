@@ -92,6 +92,28 @@ interface ClientInterface
     public function delete(string $resource, string $id = null, array $data = null) : Response;
 
     /**
+     * Performs a request to the given URI and returns the response.
+     *
+     * @param string $method The HTTP method of the request to send.
+     * @param string $uri    A relative api URI to which the POST request will be made.
+     * @param array  $data   Array of data to be sent as the POST body.
+     *
+     * @return Response
+     */
+    public function send(string $method, string $uri, array $data = null) : Response;
+
+    /**
+     * Starts a request to the given URI.
+     *
+     * @param string $method The HTTP method of the request to send.
+     * @param string $uri    A relative api URI to which the POST request will be made.
+     * @param array  $data   Array of data to be sent as the POST body.
+     *
+     * @return string opaque handle to be given to endDelete()
+     */
+    public function startSend(string $method, string $uri, array $data = null) : string;
+
+    /**
      * Get response of start*() method
      *
      * @param string $handle opaque handle from start*()
