@@ -2,7 +2,7 @@
 
 namespace TraderInteractive\Api;
 
-use Chadicus\Psr\SimpleCache\NullCache;
+use SubjectivePHP\Psr\SimpleCache\NullCache;
 use TraderInteractive\Util;
 use TraderInteractive\Util\Arrays;
 use TraderInteractive\Util\Http;

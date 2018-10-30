@@ -3,7 +3,7 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
-use Chadicus\Psr\SimpleCache\InMemoryCache;
+use SubjectivePHP\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
 use GuzzleHttp\Psr7\Request;
