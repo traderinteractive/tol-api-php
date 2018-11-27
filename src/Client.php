@@ -400,6 +400,21 @@ final class Client implements ClientInterface
     }
 
     /**
+     * Start an arbitrary POST request to the API.
+     *
+     * @param string $relativePath The URI path relative to the base API url.
+     * @param array  $data         Array of data to be sent as the POST body.
+     *
+     * @return string opaque handle to be given to end()
+     */
+    public function startRequest(string $relativePath, array $data = null) : string
+    {
+        $url = "{$this->baseUrl}/{$relativePath}";
+        $json = $data === null ? null : json_encode($data);
+        return $this->start($url, 'POST', $json, ['Content-Type' => 'application/json']);
+    }
+
+    /**
      * Obtains a new access token from the API
      *
      * @return void

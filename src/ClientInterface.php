@@ -130,4 +130,14 @@ interface ClientInterface
      * @return void
      */
     public function setDefaultHeaders(array $defaultHeaders);
+
+    /**
+     * Start an arbitrary POST request to the API.
+     *
+     * @param string $relativePath The URI path relative to the base API url.
+     * @param array  $data         Array of data to be sent as the POST body.
+     *
+     * @return string opaque handle to be given to end()
+     */
+    public function startRequest(string $relativePath, array $data = null) : string;
 }
