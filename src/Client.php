@@ -271,7 +271,12 @@ final class Client implements ClientInterface
         }
 
         $json = $data !== null ? json_encode($data) : null;
-        return $this->start($url, 'DELETE', $json, ['Content-Type' => 'application/json']);
+        $headers = [];
+        if ($json !== null) {
+            $headers['Content-Type'] = 'application/json';
+        }
+
+        return $this->start($url, 'DELETE', $json, $headers);
     }
 
     /**
@@ -309,7 +314,12 @@ final class Client implements ClientInterface
     {
         $url = "{$this->baseUrl}/{$uri}";
         $json = $data !== null ? json_encode($data) : null;
-        return $this->start($url, $method, $json, ['Content-Type' => 'application/json']);
+        $headers = [];
+        if ($json !== null) {
+            $headers['Content-Type'] = 'application/json';
+        }
+
+        return $this->start($url, $method, $json, $headers);
     }
 
     /**
