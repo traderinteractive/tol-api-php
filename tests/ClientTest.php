@@ -2,7 +2,7 @@
 
 namespace TraderInteractive\Api;
 
-use ArrayObject;
+use Fig\Http\Message\StatusCodeInterface as StatusCodes;
 use SubjectivePHP\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
@@ -585,7 +585,6 @@ final class ClientTest extends TestCase
                 if ($request->getMethod() === 'DELETE'
                         && (string)$request->getUri() === 'baseUrl/v1/resource+name/the+id'
                         && $request->getHeaders() === [
-                            'Content-Type' => ['application/json'],
                             'Accept-Encoding' => ['gzip'],
                             'Authorization' => ['Bearer a token'],
                         ]
@@ -965,6 +964,37 @@ final class ClientTest extends TestCase
         $cache->clear();
         // no token requests should be made with second  request
         $this->assertSame(['a body'], $client->index('foos')->getResponse());
+    }
+
+    /**
+     * @test
+     * @covers ::send
+     * @covers ::startSend
+     */
+    public function startSendDoesNotAddContentTypeHeaderIfNoJsonIsGiven()
+    {
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) {
+                if (substr($request->getUri(), -5) === 'token') {
+                    return new Psr7Response(
+                        StatusCodes::STATUS_OK,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'a token', 'expires_in' => 1])
+                    );
+                }
+
+                $this->assertSame('GET', $request->getMethod());
+                $this->assertSame('baseUrl/v1/feeds/123/transport', (string)$request->getUri());
+                $this->assertSame('', (string)$request->getBody());
+                $this->assertSame([], $request->getHeader('Content-Type'));
+                return new Psr7Response(StatusCodes::STATUS_OK);
+            }
+        );
+
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl/v1');
+
+        $response = $client->send('GET', 'feeds/123/transport');
+        $this->assertSame(StatusCodes::STATUS_OK, $response->getHttpCode());
     }
 
     private function getAuthentication() : Authentication
