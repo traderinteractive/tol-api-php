@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use Fig\Http\Message\StatusCodeInterface as StatusCodes;
+use Helmich\MongoMock\MockCollection;
 use SubjectivePHP\Psr\SimpleCache\InMemoryCache;
 use DominionEnterprises\Util\Arrays;
 use DominionEnterprises\Util\Http;
@@ -10,6 +11,8 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use SubjectivePHP\Psr\SimpleCache\MongoCache;
+use SubjectivePHP\Psr\SimpleCache\RedisCache;
 
 /**
  * Unit tests for the Client class
@@ -929,6 +932,44 @@ final class ClientTest extends TestCase
         $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
         $actual = $cache->get('GET|baseUrl_FSLASH_a+url_FSLASH_id|');
+        $this->assertEquals($expected, Response::fromPsr7Response($actual));
+    }
+
+    /**
+     * @test
+     * @covers ::end
+     */
+    public function useMongoCache()
+    {
+        $hasBeenCalled = false;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use (&$hasBeenCalled) {
+                if (substr_count($request->getUri(), 'token') == 1) {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'token', 'expires_in' => 1])
+                    );
+                }
+
+                if ($hasBeenCalled) {
+                    throw new \Exception('Adapter called twice');
+                }
+
+                $hasBeenCalled = true;
+                if (substr_count($request->getUri(), 'a+url') == 1) {
+                    return new Psr7Response(200, ['header' => ['value']], json_encode(['doesnt' => 'matter']));
+                }
+            }
+        );
+        $collection = new MockCollection('cache');
+        $cache = CacheFactory::make(MongoCache::class, ['collection' => $collection]);
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $expected = $client->get('a url', 'id');
+        $actual = $cache->get('GET|baseUrl_FSLASH_a+url_FSLASH_id|');
+        $this->assertEquals($expected, Response::fromPsr7Response($actual));
+
+        $expected = $client->get('a url', 'id');
         $this->assertEquals($expected, Response::fromPsr7Response($actual));
     }
 

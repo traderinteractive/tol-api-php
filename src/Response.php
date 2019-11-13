@@ -96,7 +96,7 @@ final class Response
         } finally {
             self::ensureJson();
         }
-    }//@codeCoverageIgnore Unreachable line
+    }//@codeCoverageIgnore
 
     private static function ensureJson()
     {

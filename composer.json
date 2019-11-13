@@ -35,10 +35,15 @@
     "config": {
         "sort-packages": true
     },
+    "suggest": {
+        "subjective-php/psr-cache-mongodb": "Used for Caching with Mongo"
+    },
     "require-dev": {
+        "helmich/mongomock": "^2.1",
         "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^6.5.2",
-        "squizlabs/php_codesniffer": "^3.2"
+        "squizlabs/php_codesniffer": "^3.2",
+        "subjective-php/psr-cache-mongodb": "^2.1"
     },
     "autoload": {
         "psr-4": { "TraderInteractive\\Api\\": "src" }
