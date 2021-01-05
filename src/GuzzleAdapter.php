@@ -92,7 +92,7 @@ final class GuzzleAdapter implements AdapterInterface
 
         $this->promises = [];
 
-        if (array_key_exists($endHandle, $this->exceptions)) {
+        if ($this->exceptions->offsetExists($endHandle)) {
             $exception = $this->exceptions[$endHandle];
             unset($this->exceptions[$endHandle]);
             throw $exception;
