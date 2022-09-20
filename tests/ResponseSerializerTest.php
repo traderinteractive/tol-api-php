@@ -80,11 +80,11 @@ final class ResponseSerializerTest extends TestCase
     /**
      * @test
      * @covers ::serialize
-     * @expectedException \TraderInteractive\Api\SerializerException
-     * @expectedExceptionMessage Cannot serialize value of type 'array'
      */
     public function serializeAcceptsOnlyResponses()
     {
+        $this->expectException(\TraderInteractive\Api\SerializerException::class);
+        $this->expectExceptionMessage("Cannot serialize value of type 'array'");
         $serializer = new ResponseSerializer();
         $serializer->serialize(['foo']);
     }
