@@ -50,5 +50,9 @@
     },
     "autoload-dev": {
         "psr-4": { "TraderInteractive\\Api\\": "tests" }
+    },
+    "scripts": {
+        "lint": "vendor/bin/phpcs",
+        "test": "vendor/bin/phpunit"
     }
 }
