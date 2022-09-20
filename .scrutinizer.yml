@@ -5,6 +5,10 @@ filter:
 before_commands:
     - 'composer install'
 build:
+    environment:
+        php:
+            pecl_extensions:
+                - mongodb
     nodes:
         analysis:
             tests:

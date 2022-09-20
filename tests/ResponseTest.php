@@ -56,10 +56,10 @@ final class ResponseTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function constructWithInvalidHttpCode()
     {
+        $this->expectException(\InvalidArgumentException::class);
         new Response(99, [], []);
     }
 
@@ -100,12 +100,12 @@ final class ResponseTest extends TestCase
     /**
      * @test
      * @covers ::fromPsr7Response
-     * @expectedException \UnexpectedValueException
      *
      * @return void
      */
     public function fromPsr7ResponseWithInvalidJson()
     {
+        $this->expectException(\UnexpectedValueException::class);
         Response::fromPsr7Response(
             new Psr7\Response(200, ['Content-Type' => 'application/json'], '{"foo":"bar"')
         );

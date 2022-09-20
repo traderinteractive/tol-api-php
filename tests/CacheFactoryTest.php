@@ -64,11 +64,11 @@ final class CacheFactoryTest extends TestCase
     /**
      * @test
      * @covers ::make
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Cannot create cache instance of 'Invalid'
      */
     public function cannotMakeUnsupportedCacheInstance()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Cannot create cache instance of 'Invalid'");
         CacheFactory::make('Invalid', []);
     }
 }

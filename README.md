@@ -15,7 +15,7 @@ This is a PHP client for [REST](http://en.wikipedia.org/wiki/Representational_st
 
 ## Requirements
 
-This api client requires PHP 7.0 or newer and uses composer to install further PHP dependencies.  See the [composer specification](composer.json) for more details.
+This api client requires PHP 7.3 or newer and uses composer to install further PHP dependencies.  See the [composer specification](composer.json) for more details.
 
 When contributing, access to a working mongo database for testing is needed.  See the [Contribution Guidelines](.github/CONTRIBUTING.md) for more details.
 

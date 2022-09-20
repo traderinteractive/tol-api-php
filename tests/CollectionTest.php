@@ -48,6 +48,7 @@ final class CollectionTest extends TestCase
      * Verifies code does not explode when rewind() consectutively
      *
      * @test
+     * @covers ::rewind
      * @group edgecase
      */
     public function consecutiveRewind()
@@ -68,6 +69,7 @@ final class CollectionTest extends TestCase
      * Verifies code does not explode when current() consectutively
      *
      * @test
+     * @covers ::current
      * @group edgecase
      */
     public function consecutiveCurrent()
@@ -81,6 +83,7 @@ final class CollectionTest extends TestCase
      * Verifies code does not explode when next() consectutively
      *
      * @test
+     * @covers ::next
      * @group edgecase
      */
     public function consecutiveNext()
@@ -133,10 +136,11 @@ final class CollectionTest extends TestCase
      * Verfies current() throws when collection is empty
      *
      * @test
-     * @expectedException \OutOfBoundsException
+     * @covers ::current
      */
     public function currentWithEmpty()
     {
+        $this->expectException(\OutOfBoundsException::class);
         $collection = new Collection($this->getClient([]), 'empty');
         $collection->current();
     }
@@ -145,16 +149,20 @@ final class CollectionTest extends TestCase
      * Verfies key() throws when collection is empty
      *
      * @test
-     * @expectedException \OutOfBoundsException
+     * @covers ::key
      */
     public function keyWithEmpty()
     {
+        $this->expectException(\OutOfBoundsException::class);
         $collection = new Collection($this->getClient([]), 'empty');
         $collection->key();
     }
 
     /**
      * @test
+     * @covers ::key
+     * @covers ::current
+     * @covers ::next
      */
     public function multiIteration()
     {
@@ -181,6 +189,8 @@ final class CollectionTest extends TestCase
      * Verify Collection can handle an empty response
      *
      * @test
+     * @covers ::valid
+     * @covers ::count
      */
     public function emptyResult()
     {
@@ -193,6 +203,9 @@ final class CollectionTest extends TestCase
      * Verify Collection can handle a response with a single item
      *
      * @test
+     * @covers ::key
+     * @covers ::current
+     * @covers ::next
      */
     public function oneItemCollection()
     {

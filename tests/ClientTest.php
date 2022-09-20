@@ -81,11 +81,11 @@ final class ClientTest extends TestCase
      * @test
      * @group unit
      * @covers ::end
-     * @expectedException Exception
-     * @expectedExceptionMessage Invalid Credentials
      */
     public function exceptionIsThrownOnBadCredentials()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid Credentials');
         $tokenCount = 0;
         $adapter = new FakeAdapter(
             function (RequestInterface $request) use (&$tokenCount) {
@@ -355,10 +355,10 @@ final class ClientTest extends TestCase
      * @test
      * @group unit
      * @covers ::__construct
-     * @expectedException \Exception
      */
     public function throwsWithHttpCodeNot200()
     {
+        $this->expectException(\Exception::class);
         $adapter = new FakeAdapter(
             function (RequestInterface $request) {
                 return new Psr7Response(
@@ -753,10 +753,10 @@ final class ClientTest extends TestCase
      * @test
      * @group unit
      * @dataProvider constructorBadData
-     * @expectedException \InvalidArgumentException
      */
     public function constructWithInvalidParameters($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache)
     {
+        $this->expectException(\InvalidArgumentException::class);
         $client = new Client($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache);
     }
 

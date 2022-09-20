@@ -20,10 +20,10 @@ final class GuzzleAdapterTest extends TestCase
      * @covers ::__construct
      * @covers ::start
      * @covers ::end
-     * @expectedException \Exception
      */
     public function requestThrowsOnUnsupporetedMethod()
     {
+        $this->expectException(\Exception::class);
         $adapter = new GuzzleAdapter();
         $request = new Request('SILLY', 'a resource', [], null);
         $adapter->end($adapter->start($request));
@@ -85,11 +85,11 @@ final class GuzzleAdapterTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::end
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage $endHandle not found
      */
     public function badHandle()
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('$endHandle not found');
         (new GuzzleAdapter())->end(0);
     }
 
@@ -110,7 +110,7 @@ final class GuzzleAdapterTest extends TestCase
         );
 
         foreach ($response->getHeaders() as $header) {
-            $this->assertInternalType('array', $header);
+            $this->assertIsArray($header);
         }
     }
 }
