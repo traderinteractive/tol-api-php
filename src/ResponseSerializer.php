@@ -33,7 +33,7 @@ final class ResponseSerializer implements SerializerInterface
         $headers = $data['headers'];
         $body = $data['body'];
         if ($body !== '') {
-            $body = Psr7\stream_for($body);
+            $body = Psr7\Utils::streamFor($body);
         }
 
         return new Psr7\Response($statusCode, $headers, $body);
