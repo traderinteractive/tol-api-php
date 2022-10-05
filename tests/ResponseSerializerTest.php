@@ -55,7 +55,7 @@ final class ResponseSerializerTest extends TestCase
                 'response' => new Psr7\Response(
                     StatusCodes::STATUS_OK,
                     ['Content-Type' => ['application/json']],
-                    Psr7\stream_for('{"success": true}')
+                    Psr7\Utils::streamFor('{"success": true}')
                 ),
                 'data' => [
                     'statusCode' => StatusCodes::STATUS_OK,

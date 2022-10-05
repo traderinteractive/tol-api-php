@@ -6,7 +6,7 @@ use ArrayObject;
 use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Promise;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -127,7 +127,7 @@ final class GuzzleAdapter implements AdapterInterface
             function (ResponseInterface $response, $index) use ($results) {
                 $results[$index] = $response;
             },
-            function (RequestException $e, $index) use ($exceptions) {
+            function (TransferException $e, $index) use ($exceptions) {
                 $exceptions[$index] = $e;
             }
         )->wait();
