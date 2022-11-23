@@ -20,6 +20,8 @@ final class Authentication
      */
     private $getTokenRequestFunc;
 
+    protected $testing;
+
     /**
      * Private constructor to safeguard undeclared functions
      *
