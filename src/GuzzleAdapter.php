@@ -122,7 +122,7 @@ final class GuzzleAdapter implements AdapterInterface
         }
 
         $results = new ArrayObject();
-        Promise\each(
+        Promise\Each::of(
             $this->promises,
             function (ResponseInterface $response, $index) use ($results) {
                 $results[$index] = $response;
