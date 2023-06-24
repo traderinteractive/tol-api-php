@@ -79,6 +79,39 @@ final class Authentication
     }
 
     /**
+     * Creates a new instance of Authentication for Client Credentials grant type
+     *
+     * @param string $clientId        The oauth client id
+     * @param string $clientSecret    The oauth client secret
+     * @param string $tokenResource   The access token resource of the API
+     *
+     * @return Authentication
+     */
+    public static function createApiGatewayClientCredentials(
+        string $clientId,
+        string $clientSecret,
+        string $tokenResource = 'token'
+    ) : Authentication {
+        $getTokenRequestFunc = function (
+            $authUrl
+        ) use (
+            $clientId,
+            $clientSecret,
+            $tokenResource
+        ) {
+            $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
+            return new Request(
+                'POST',
+                "{$authUrl}/oauth2/{$tokenResource}",
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
+            );
+        };
+
+        return new self($getTokenRequestFunc);
+    }
+
+    /**
      * Creates a new instance of Authentication for Owner Credentials grant type
      *
      * @param string $clientId        The oauth client id
@@ -166,11 +199,19 @@ final class Authentication
      *
      * @param string      $baseUrl      The base url of the API
      * @param string|null $refreshToken The refresh token of the API
+     * @param string|null $authUrl      The auth url of the API
      *
      * @return RequestInterface
      */
-    public function getTokenRequest(string $baseUrl, string $refreshToken = null) : RequestInterface
-    {
+    public function getTokenRequest(
+        string $baseUrl,
+        string $refreshToken = null,
+        string $authUrl = null
+    ) : RequestInterface {
+        if ($authUrl !== null) {
+            return call_user_func($this->getTokenRequestFunc, $authUrl);
+        }
+
         return call_user_func($this->getTokenRequestFunc, $baseUrl, $refreshToken);
     }
 

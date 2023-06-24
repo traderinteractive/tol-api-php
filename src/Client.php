@@ -68,6 +68,11 @@ final class Client implements ClientInterface
     private $baseUrl;
 
     /**
+     * @var string
+     */
+    private $authUrl;
+
+    /**
      * @var AdapterInterface
      */
     private $adapter;
@@ -117,6 +122,7 @@ final class Client implements ClientInterface
      * @param AdapterInterface $adapter        HTTP Adapter for sending request to the api
      * @param Authentication   $authentication Oauth authentication implementation
      * @param string           $baseUrl        Base url of the API server
+     * @param string           $authUrl        Cognito Auth url.
      * @param int              $cacheMode      Strategy for caching
      * @param CacheInterface   $cache          Storage for cached API responses
      * @param string           $accessToken    API access token
@@ -129,6 +135,7 @@ final class Client implements ClientInterface
         AdapterInterface $adapter,
         Authentication $authentication,
         string $baseUrl,
+        string $authUrl = null,
         int $cacheMode = self::CACHE_MODE_NONE,
         CacheInterface $cache = null,
         string $accessToken = null,
@@ -143,6 +150,7 @@ final class Client implements ClientInterface
 
         $this->adapter = $adapter;
         $this->baseUrl = $baseUrl;
+        $this->authUrl = $authUrl;
         $this->authentication = $authentication;
         $this->cache = $cache ?? new NullCache();
         $this->cacheMode = $cacheMode;
@@ -416,7 +424,7 @@ final class Client implements ClientInterface
      */
     private function refreshAccessToken()
     {
-        $request = $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken);
+        $request = $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken, $this->authUrl);
         $response = $this->adapter->end($this->adapter->start($request));
 
         list($this->accessToken, $this->refreshToken, $expires) = Authentication::parseTokenResponse($response);
@@ -439,13 +447,17 @@ final class Client implements ClientInterface
         }
 
         $cachedResponse = $this->cache->get(
-            $this->getCacheKey($this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken))
+            $this->getCacheKey(
+                $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken, $this->authUrl)
+            )
         );
+
+
         if ($cachedResponse === null) {
             return;
         }
 
-        list($this->accessToken, $this->refreshToken, ) = Authentication::parseTokenResponse($cachedResponse);
+        list($this->accessToken, $this->refreshToken) = Authentication::parseTokenResponse($cachedResponse);
     }
 
     /**

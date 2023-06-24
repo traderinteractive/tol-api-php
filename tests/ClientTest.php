@@ -79,6 +79,42 @@ final class ClientTest extends TestCase
 
     /**
      * @test
+     * @covers ::getTokens
+     */
+    public function getTokensWithApiGatewayClientCredentialsCall()
+    {
+        $tokenCount = 0;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
+                    $response = new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
+                    );
+                    ++$tokenCount;
+                    return $response;
+                }
+
+                $headers = $request->getHeaders();
+                if ($headers['Authorization'] === ['Bearer 1']) {
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
+                }
+
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
+            }
+        );
+        $client = new Client($adapter, $this->getApiGatewayAuthentication(), 'a url', 'auth url');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+        $this->assertSame([1, null], $client->getTokens());
+    }
+
+    /**
+     * @test
      * @group unit
      * @covers ::end
      */
@@ -145,7 +181,7 @@ final class ClientTest extends TestCase
             }
         );
 
-        $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url', null, Client::CACHE_MODE_NONE, null, 'foo');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -163,7 +199,7 @@ final class ClientTest extends TestCase
                 return new Psr7Response(200, ['Content-Type' => ['application/json']]);
             }
         );
-        $client = new Client($adapter, $this->getAuthentication(), 'a url', Client::CACHE_MODE_NONE, null, 'foo');
+        $client = new Client($adapter, $this->getAuthentication(), 'a url', null, Client::CACHE_MODE_NONE, null, 'foo');
         $client->setDefaultHeaders(['testHeader' => 'foo']);
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
@@ -246,6 +282,59 @@ final class ClientTest extends TestCase
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     */
+    public function tokenIsNotRefreshedUsingRefreshTokenWithApiGatewayCall()
+    {
+        $counter = 0;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use (&$counter) {
+                if ($counter === 1) {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'goodToken', 'refresh_token' => 'yeah', 'expires_in' => 2])
+                    );
+                }
+                if (substr_count($request->getUri(), 'token') === 1
+                    && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
+                    $counter++;
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'badToken', 'refresh_token' => 'boo', 'expires_in' => 1])
+                    );
+                }
+
+                if (substr_count($request->getUri(), 'token') === 1
+                    && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'goodToken', 'refresh_token' => 'boo', 'expires_in' => 1])
+                    );
+                }
+
+                $headers = $request->getHeaders();
+                if ($headers['Authorization'] === ['Bearer goodToken']) {
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
+                }
+
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
+            }
+        );
+
+        $client = new Client($adapter, $this->getApiGatewayAuthentication(), 'a url', 'auth url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -754,10 +843,16 @@ final class ClientTest extends TestCase
      * @group unit
      * @dataProvider constructorBadData
      */
-    public function constructWithInvalidParameters($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache)
-    {
+    public function constructWithInvalidParameters(
+        $adapter,
+        $authentication,
+        $apiBaseUrl,
+        $apiAuthUrl,
+        $cacheMode,
+        $cache
+    ) {
         $this->expectException(\InvalidArgumentException::class);
-        $client = new Client($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache);
+        $client = new Client($adapter, $authentication, $apiBaseUrl, $apiAuthUrl, $cacheMode, $cache);
     }
 
     /**
@@ -780,7 +875,7 @@ final class ClientTest extends TestCase
         $cache = new InMemoryCache();
 
         return [
-            '$cacheMode is not valid constant' => [$adapter, $authentication, 'baseUrl', 42, $cache],
+            '$cacheMode is not valid constant' => [$adapter, $authentication, 'baseUrl', null, 42, $cache],
         ];
     }
 
@@ -805,7 +900,7 @@ final class ClientTest extends TestCase
         $request = new Request('GET', 'baseUrl/a+url/id', []);
         $psr7Response = new Psr7Response(200, ['key' => ['value']], json_encode(['doesnt' => 'matter']));
         $cache->set($this->getCacheKey($request), $psr7Response);
-        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', null, Client::CACHE_MODE_GET, $cache);
         $actual = $client->get('a url', 'id');
         $this->assertSame($psr7Response->getStatusCode(), $actual->getHttpCode());
         $this->assertSame(json_decode($psr7Response->getBody(), true), $actual->getResponse());
@@ -834,6 +929,7 @@ final class ClientTest extends TestCase
             $adapter,
             $this->getAuthentication(),
             'baseUrl',
+            null,
             Client::CACHE_MODE_REFRESH,
             $cache,
             'foo'
@@ -857,7 +953,7 @@ final class ClientTest extends TestCase
                 );
             }
         );
-        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', null, Client::CACHE_MODE_GET, $cache);
         $actual = $client->end($client->startGet('a url', 'id'));
         $this->assertSame($expected->getStatusCode(), $actual->getHttpCode());
         $this->assertSame($expected->getHeaders(), $actual->getResponseHeaders());
@@ -896,6 +992,7 @@ final class ClientTest extends TestCase
             $adapter,
             $this->getAuthentication(),
             'baseUrl/v1',
+            null,
             Client::CACHE_MODE_TOKEN,
             new InMemoryCache()
         );
@@ -929,7 +1026,7 @@ final class ClientTest extends TestCase
             }
         );
         $cache = new InMemoryCache();
-        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', null, Client::CACHE_MODE_GET, $cache);
         $expected = $client->end($client->startGet('a url', 'id'));
         $actual = $cache->get('GET|baseUrl_FSLASH_a+url_FSLASH_id|');
         $this->assertEquals($expected, Response::fromPsr7Response($actual));
@@ -964,7 +1061,7 @@ final class ClientTest extends TestCase
         );
         $collection = new MockCollection('cache');
         $cache = CacheFactory::make(MongoCache::class, ['collection' => $collection]);
-        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', Client::CACHE_MODE_GET, $cache);
+        $client = new Client($adapter, $this->getAuthentication(), 'baseUrl', null, Client::CACHE_MODE_GET, $cache);
         $expected = $client->get('a url', 'id');
         $actual = $cache->get('GET|baseUrl_FSLASH_a+url_FSLASH_id|');
         $this->assertEquals($expected, Response::fromPsr7Response($actual));
@@ -998,7 +1095,7 @@ final class ClientTest extends TestCase
                 }
             }
         );
-        $client = new Client($adapter, $authentication, 'baseUrl', Client::CACHE_MODE_TOKEN, $cache);
+        $client = new Client($adapter, $authentication, 'baseUrl', null, Client::CACHE_MODE_TOKEN, $cache);
         // no token requests should be made
         $this->assertSame(['a body'], $client->index('foos')->getResponse());
         // empty the cache
@@ -1041,6 +1138,11 @@ final class ClientTest extends TestCase
     private function getAuthentication() : Authentication
     {
         return Authentication::createClientCredentials('not under test', 'not under test');
+    }
+
+    private function getApiGatewayAuthentication() : Authentication
+    {
+        return Authentication::createApiGatewayClientCredentials('not under test', 'not under test');
     }
 
     private function getCacheKey(RequestInterface $request) : string
