@@ -3,3 +3,9 @@
 /clover.xml
 composer.lock
 phpunit.xml
+.*
+!.coveralls.yml
+!.gitattributes
+!.gitignore
+!.scrutinizer.yml
+!.travis.yml
