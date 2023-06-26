@@ -68,6 +68,11 @@ final class Client implements ClientInterface
     private $baseUrl;
 
     /**
+     * @var string
+     */
+    private $authUrl;
+
+    /**
      * @var AdapterInterface
      */
     private $adapter;
@@ -439,8 +444,11 @@ final class Client implements ClientInterface
         }
 
         $cachedResponse = $this->cache->get(
-            $this->getCacheKey($this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken))
+            $this->getCacheKey(
+                $this->authentication->getTokenRequest($this->baseUrl, $this->refreshToken)
+            )
         );
+
         if ($cachedResponse === null) {
             return;
         }

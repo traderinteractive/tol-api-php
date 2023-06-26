@@ -79,6 +79,42 @@ final class ClientTest extends TestCase
 
     /**
      * @test
+     * @covers ::getTokens
+     */
+    public function getTokensWithApiGatewayClientCredentialsCall()
+    {
+        $tokenCount = 0;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use (&$tokenCount) {
+                if (substr_count($request->getUri(), 'token') == 1) {
+                    $response = new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => $tokenCount, 'expires_in' => 1])
+                    );
+                    ++$tokenCount;
+                    return $response;
+                }
+
+                $headers = $request->getHeaders();
+                if ($headers['Authorization'] === ['Bearer 1']) {
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
+                }
+
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
+            }
+        );
+        $client = new Client($adapter, $this->getApiGatewayAuthentication(), 'a url');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+        $this->assertSame([1, null], $client->getTokens());
+    }
+
+    /**
+     * @test
      * @group unit
      * @covers ::end
      */
@@ -246,6 +282,59 @@ final class ClientTest extends TestCase
         );
 
         $client = new Client($adapter, $this->getAuthentication(), 'a url');
+        $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
+    }
+
+    /**
+     * @test
+     * @group unit
+     * @covers ::end
+     */
+    public function tokenIsNotRefreshedUsingRefreshTokenWithApiGatewayCall()
+    {
+        $counter = 0;
+        $adapter = new FakeAdapter(
+            function (RequestInterface $request) use (&$counter) {
+                if ($counter === 1) {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'goodToken', 'refresh_token' => 'yeah', 'expires_in' => 2])
+                    );
+                }
+                if (substr_count($request->getUri(), 'token') === 1
+                    && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
+                    $counter++;
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'badToken', 'refresh_token' => 'boo', 'expires_in' => 1])
+                    );
+                }
+
+                if (substr_count($request->getUri(), 'token') === 1
+                    && substr_count($request->getBody(), 'grant_type=client_credentials') === 1) {
+                    return new Psr7Response(
+                        200,
+                        ['Content-Type' => ['application/json']],
+                        json_encode(['access_token' => 'goodToken', 'refresh_token' => 'boo', 'expires_in' => 1])
+                    );
+                }
+
+                $headers = $request->getHeaders();
+                if ($headers['Authorization'] === ['Bearer goodToken']) {
+                    return new Psr7Response(200, ['Content-Type' => ['application/json']]);
+                }
+
+                return new Psr7Response(
+                    401,
+                    ['Content-Type' => ['application/json']],
+                    json_encode(['error' => 'invalid_grant'])
+                );
+            }
+        );
+
+        $client = new Client($adapter, $this->getApiGatewayAuthentication(), 'a url');
         $this->assertSame(200, $client->end($client->startIndex('a resource', []))->getHttpCode());
     }
 
@@ -754,8 +843,13 @@ final class ClientTest extends TestCase
      * @group unit
      * @dataProvider constructorBadData
      */
-    public function constructWithInvalidParameters($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache)
-    {
+    public function constructWithInvalidParameters(
+        $adapter,
+        $authentication,
+        $apiBaseUrl,
+        $cacheMode,
+        $cache
+    ) {
         $this->expectException(\InvalidArgumentException::class);
         $client = new Client($adapter, $authentication, $apiBaseUrl, $cacheMode, $cache);
     }
@@ -1041,6 +1135,11 @@ final class ClientTest extends TestCase
     private function getAuthentication() : Authentication
     {
         return Authentication::createClientCredentials('not under test', 'not under test');
+    }
+
+    private function getApiGatewayAuthentication() : Authentication
+    {
+        return Authentication::createApiGatewayClientCredentials('not under test', 'not under test', 'http://auth');
     }
 
     private function getCacheKey(RequestInterface $request) : string
