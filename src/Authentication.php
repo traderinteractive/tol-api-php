@@ -83,6 +83,7 @@ final class Authentication
      *
      * @param string $clientId        The oauth client id
      * @param string $clientSecret    The oauth client secret
+     * @param string $authUrl         The oauth auth url
      * @param string $tokenResource   The access token resource of the API
      *
      * @return Authentication
@@ -90,13 +91,16 @@ final class Authentication
     public static function createApiGatewayClientCredentials(
         string $clientId,
         string $clientSecret,
+        string $authUrl,
         string $tokenResource = 'token'
     ) : Authentication {
         $getTokenRequestFunc = function (
-            $authUrl
+            string $unusedBaseUrl,
+            string $unusedRefreshToken = null
         ) use (
             $clientId,
             $clientSecret,
+            $authUrl,
             $tokenResource
         ) {
             $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
@@ -199,19 +203,13 @@ final class Authentication
      *
      * @param string      $baseUrl      The base url of the API
      * @param string|null $refreshToken The refresh token of the API
-     * @param string|null $authUrl      The auth url of the API
      *
      * @return RequestInterface
      */
     public function getTokenRequest(
         string $baseUrl,
-        string $refreshToken = null,
-        string $authUrl = null
+        string $refreshToken = null
     ) : RequestInterface {
-        if ($authUrl !== null) {
-            return call_user_func($this->getTokenRequestFunc, $authUrl);
-        }
-
         return call_user_func($this->getTokenRequestFunc, $baseUrl, $refreshToken);
     }
 

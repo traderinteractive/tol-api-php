@@ -30,7 +30,7 @@ final class AuthenticationTest extends TestCase
      */
     public function createApiGatewayClientCredentials()
     {
-        $auth = Authentication::createApiGatewayClientCredentials('not under test', 'not under test');
+        $auth = Authentication::createApiGatewayClientCredentials('not under test', 'not under test', 'http://auth');
         $this->assertInstanceOf('\TraderInteractive\Api\Authentication', $auth);
     }
 
@@ -41,8 +41,8 @@ final class AuthenticationTest extends TestCase
      */
     public function getTokenRequestApiGatewayClientCredentials()
     {
-        $auth = Authentication::createApiGatewayClientCredentials('id', 'secret');
-        $request = $auth->getTokenRequest('baseUrl', null, 'authUrl');
+        $auth = Authentication::createApiGatewayClientCredentials('id', 'secret', 'authUrl');
+        $request = $auth->getTokenRequest('baseUrl');
         $this->assertSame('authUrl/oauth2/token', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame(
