@@ -139,6 +139,40 @@ final class Authentication
     }
 
     /**
+     * Creates a new instance of Authentication for API Gateway Client Credentials grant type
+     *
+     * @param string $clientId     The oauth client id
+     * @param string $clientSecret The oauth client secret
+     * @param string $authUrl      The oauth auth url
+     *
+     * @return Authentication
+     */
+    public static function createApiGatewayClientCredentials(
+        string $clientId,
+        string $clientSecret,
+        string $authUrl
+    ) : Authentication {
+        $getTokenRequestFunc = function (
+            string $unusedBaseUrl,
+            string $unusedRefreshToken = null
+        ) use (
+            $clientId,
+            $clientSecret,
+            $authUrl
+        ) {
+            $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
+            return new Request(
+                'POST',
+                $authUrl,
+                ['Content-Type' => 'application/x-www-form-urlencoded'],
+                Http::buildQueryString($data)
+            );
+        };
+
+        return new self($getTokenRequestFunc);
+    }
+
+    /**
      * Extracts an access token from the given API response
      *
      * @param ResponseInterface $response The API response containing the access token
