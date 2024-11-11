@@ -186,7 +186,7 @@ final class AuthenticationTest extends TestCase
     {
         $auth = Authentication::createApiGatewayClientCredentials('id', 'secret', 'authUrl');
         $request = $auth->getTokenRequest('baseUrl');
-        $this->assertSame('authUrl/oauth2/token', (string)$request->getUri());
+        $this->assertSame('authUrl', (string)$request->getUri());
         $this->assertSame('POST', $request->getMethod());
         $this->assertSame(
             'client_id=id&client_secret=secret&grant_type=client_credentials',

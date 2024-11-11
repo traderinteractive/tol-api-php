@@ -141,18 +141,16 @@ final class Authentication
     /**
      * Creates a new instance of Authentication for Client Credentials grant type
      *
-     * @param string $clientId        The oauth client id
-     * @param string $clientSecret    The oauth client secret
-     * @param string $authUrl         The oauth auth url
-     * @param string $tokenResource   The access token resource of the API
+     * @param string $clientId     The oauth client id
+     * @param string $clientSecret The oauth client secret
+     * @param string $authUrl      The oauth auth url
      *
      * @return Authentication
      */
     public static function createApiGatewayClientCredentials(
         string $clientId,
         string $clientSecret,
-        string $authUrl,
-        string $tokenResource = 'token'
+        string $authUrl
     ) : Authentication {
         $getTokenRequestFunc = function (
             string $unusedBaseUrl,
@@ -160,13 +158,12 @@ final class Authentication
         ) use (
             $clientId,
             $clientSecret,
-            $authUrl,
-            $tokenResource
+            $authUrl
         ) {
             $data = ['client_id' => $clientId, 'client_secret' => $clientSecret, 'grant_type' => 'client_credentials'];
             return new Request(
                 'POST',
-                "{$authUrl}/oauth2/{$tokenResource}",
+                $authUrl,
                 ['Content-Type' => 'application/x-www-form-urlencoded'],
                 Http::buildQueryString($data)
             );
