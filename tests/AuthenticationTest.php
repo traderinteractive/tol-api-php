@@ -166,6 +166,34 @@ final class AuthenticationTest extends TestCase
         );
         $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
     }
+
+    /**
+     * @test
+     * @covers ::createApiGatewayClientCredentials
+     */
+    public function createApiGatewayClientCredentials()
+    {
+        $auth = Authentication::createApiGatewayClientCredentials('not under test', 'not under test', 'http://auth');
+        $this->assertInstanceOf('\TraderInteractive\Api\Authentication', $auth);
+    }
+
+    /**
+     * @test
+     * @covers ::createApiGatewayClientCredentials
+     * @covers ::getTokenRequest
+     */
+    public function getTokenRequestApiGatewayClientCredentials()
+    {
+        $auth = Authentication::createApiGatewayClientCredentials('id', 'secret', 'authUrl');
+        $request = $auth->getTokenRequest('baseUrl');
+        $this->assertSame('authUrl/oauth2/token', (string)$request->getUri());
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame(
+            'client_id=id&client_secret=secret&grant_type=client_credentials',
+            (string)$request->getBody()
+        );
+        $this->assertSame(['Content-Type' => ['application/x-www-form-urlencoded']], $request->getHeaders());
+    }
 }
 
 function time()
