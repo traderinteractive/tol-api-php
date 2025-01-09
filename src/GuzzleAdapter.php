@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
+use GuzzleHttp\Psr7\Utils;
 use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
@@ -74,17 +75,25 @@ final class GuzzleAdapter implements AdapterInterface
         foreach ($results as $handle => $response) {
             try {
                 $contents = (string)$response->getBody();
-                if (trim($contents) !== '') {
-                    json_decode($contents, true);
-                    Util::ensure(
-                        JSON_ERROR_NONE,
-                        json_last_error(),
-                        '\UnexpectedValueException',
-                        [json_last_error_msg()]
-                    );
+                if (trim($contents) === '') {
+                    $this->responses[$handle] = $response;
+                    continue;
                 }
 
-                $this->responses[$handle] = $response;
+                json_decode($contents, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $this->responses[$handle] = $response;
+                    continue;
+                }
+
+                $errorBody = [
+                    'error' => [
+                        'message' => 'Original API response did not contain valid JSON: ' . json_last_error_msg(),
+                        'originalResponse' => $contents,
+                    ],
+                ];
+
+                $this->responses[$handle] = $response->withBody(Utils::streamFor(json_encode($errorBody)));
             } catch (\Exception $e) {
                 $this->exceptions[$handle] = $e;
             }
