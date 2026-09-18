@@ -3,13 +3,16 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
-use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
-use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Pool;
 use GuzzleHttp\Promise;
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
+use Throwable;
+use TraderInteractive\Util;
 
 /**
  * Concrete implentation of Adapter interface
@@ -17,11 +20,16 @@ use Psr\Http\Message\ResponseInterface;
 final class GuzzleAdapter implements AdapterInterface
 {
     /**
-     * Collection of Promise\PromiseInterface instances with keys matching what was given from start().
+     * @var int
+     */
+    const DEFAULT_CONCURRENCY_LIMIT = PHP_INT_MAX;
+
+    /**
+     * Collection of RequestInterface instances with keys matching what was given from start().
      *
      * @var array
      */
-    private $promises = [];
+    private $requests = [];
 
     /**
      * Collection of Api\Response with keys matching what was given from start().
@@ -38,12 +46,19 @@ final class GuzzleAdapter implements AdapterInterface
     private $exceptions;
 
     /**
+     * @var int
+     */
+    private $concurrencyLimit;
+
+    /**
      * @var GuzzleClientInterface
      */
     private $client;
 
-    public function __construct(GuzzleClientInterface $client = null)
-    {
+    public function __construct(
+        GuzzleClientInterface $client = null,
+        int $concurrencyLimit = self::DEFAULT_CONCURRENCY_LIMIT
+    ) {
         $this->exceptions = new ArrayObject();
         $this->client = $client ?? new GuzzleClient(
             [
@@ -51,6 +66,10 @@ final class GuzzleAdapter implements AdapterInterface
                 'http_errors' => false, //only for 400/500 error codes, actual exceptions can still happen
             ]
         );
+        $this->concurrencyLimit = $concurrencyLimit;
+        if ($this->concurrencyLimit <= 0) {
+            throw new InvalidArgumentException('$concurrencyLimit must be a positive integer');
+        }
     }
 
     /**
@@ -59,7 +78,7 @@ final class GuzzleAdapter implements AdapterInterface
     public function start(RequestInterface $request) : string
     {
         $handle = uniqid();
-        $this->promises[$handle] = $this->client->sendAsync($request);
+        $this->requests[$handle] = $request;
         return $handle;
     }
 
@@ -70,7 +89,7 @@ final class GuzzleAdapter implements AdapterInterface
      */
     public function end(string $endHandle) : ResponseInterface
     {
-        $results = $this->fulfillPromises($this->promises, $this->exceptions);
+        $results = $this->fulfillPromises($this->requests, $this->exceptions);
         foreach ($results as $handle => $response) {
             try {
                 $contents = (string)$response->getBody();
@@ -90,7 +109,7 @@ final class GuzzleAdapter implements AdapterInterface
             }
         }
 
-        $this->promises = [];
+        $this->requests = [];
 
         if ($this->exceptions->offsetExists($endHandle)) {
             $exception = $this->exceptions[$endHandle];
@@ -108,30 +127,33 @@ final class GuzzleAdapter implements AdapterInterface
     }
 
     /**
-     * Helper method to execute all guzzle promises.
-     *
-     * @param array $promises
-     * @param array $exceptions
-     *
-     * @return array Array of fulfilled PSR7 responses.
+     * @return ResponseInterface[]
      */
-    private function fulfillPromises(array $promises, ArrayObject $exceptions) : array
+    private function fulfillPromises(array $requests, ArrayObject $exceptions): array
     {
-        if (empty($promises)) {
+        if (empty($requests)) {
             return [];
         }
 
-        $results = new ArrayObject();
-        Promise\Each::of(
-            $this->promises,
-            function (ResponseInterface $response, $index) use ($results) {
-                $results[$index] = $response;
-            },
-            function (TransferException $e, $index) use ($exceptions) {
-                $exceptions[$index] = $e;
-            }
-        )->wait();
+        $responses = new ArrayObject();
+        $pool = new Pool(
+            $this->client,
+            $requests,
+            [
+                'concurrency' => $this->concurrencyLimit,
+                Promise\Promise::FULFILLED => function (ResponseInterface $response, $index) use ($responses) {
+                    $responses[$index] = $response;
+                },
+                Promise\Promise::REJECTED => function ($reason, $index) use ($exceptions) {
+                    $exceptions[$index] = $reason instanceof Throwable
+                        ? $reason
+                        : new RuntimeException('Request rejected with non throwable reason');
+                },
+            ]
+        );
+        $promise = $pool->promise();
+        $promise->wait();
 
-        return $results->getArrayCopy();
+        return $responses->getArrayCopy();
     }
 }
