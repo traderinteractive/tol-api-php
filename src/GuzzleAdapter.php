@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use ArrayObject;
+use InvalidArgumentException;
 use TraderInteractive\Util;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
@@ -16,6 +17,11 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class GuzzleAdapter implements AdapterInterface
 {
+    /**
+     * @var int
+     */
+    const DEFAULT_CONCURRENCY_LIMIT = PHP_INT_MAX;
+
     /**
      * Collection of Promise\PromiseInterface instances with keys matching what was given from start().
      *
@@ -38,12 +44,19 @@ final class GuzzleAdapter implements AdapterInterface
     private $exceptions;
 
     /**
+     * @var int
+     */
+    private $concurrencyLimit;
+
+    /**
      * @var GuzzleClientInterface
      */
     private $client;
 
-    public function __construct(GuzzleClientInterface $client = null)
-    {
+    public function __construct(
+        GuzzleClientInterface $client = null,
+        int $concurrencyLimit = self::DEFAULT_CONCURRENCY_LIMIT
+    ) {
         $this->exceptions = new ArrayObject();
         $this->client = $client ?? new GuzzleClient(
             [
@@ -51,6 +64,10 @@ final class GuzzleAdapter implements AdapterInterface
                 'http_errors' => false, //only for 400/500 error codes, actual exceptions can still happen
             ]
         );
+        $this->concurrencyLimit = $concurrencyLimit;
+        if ($this->concurrencyLimit <= 0) {
+            throw new InvalidArgumentException('$concurrencyLimit must be a positive integer');
+        }
     }
 
     /**
@@ -124,6 +141,7 @@ final class GuzzleAdapter implements AdapterInterface
         $results = new ArrayObject();
         Promise\Each::of(
             $this->promises,
+            $this->concurrencyLimit,
             function (ResponseInterface $response, $index) use ($results) {
                 $results[$index] = $response;
             },

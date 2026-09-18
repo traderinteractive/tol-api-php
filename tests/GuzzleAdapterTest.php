@@ -3,6 +3,7 @@
 namespace TraderInteractive\Api;
 
 use GuzzleHttp\Psr7\Request;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TraderInteractive\Util\Http;
 
@@ -112,5 +113,27 @@ final class GuzzleAdapterTest extends TestCase
         foreach ($response->getHeaders() as $header) {
             $this->assertIsArray($header);
         }
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     */
+    public function constructWithConcurrencyLimitZero()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$concurrencyLimit must be a positive integer');
+        new GuzzleAdapter(null, 0);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     */
+    public function constructWithNegativeConcurrencyLimit()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$concurrencyLimit must be a positive integer');
+        new GuzzleAdapter(null, -1);
     }
 }
